@@ -26,7 +26,7 @@ public class AuthController {
 
     @CrossOrigin
     @PostMapping(path = "/registration")
-    public @ResponseBody ResponseEntity<String> addNewUser(@RequestBody RegistrationCriteria criteria) {
+    public @ResponseBody ResponseEntity<String> registerNewUser(@RequestBody RegistrationCriteria criteria) {
         User user = new User();
         user.setName(criteria.getName());
         user.setEmail(criteria.getEmail());
