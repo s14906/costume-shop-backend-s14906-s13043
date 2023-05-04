@@ -1,4 +1,4 @@
-package com.costumeshop.core.security.controller.criteria;
+package com.costumeshop.controller.criteria;
 
 import lombok.Getter;
 import lombok.Setter;

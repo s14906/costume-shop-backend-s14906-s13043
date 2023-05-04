@@ -1,7 +1,7 @@
-package com.costumeshop.core.security.controller;
+package com.costumeshop.controller;
 
-import com.costumeshop.core.security.controller.criteria.LoginCriteria;
-import com.costumeshop.core.security.controller.criteria.RegistrationCriteria;
+import com.costumeshop.controller.criteria.LoginCriteria;
+import com.costumeshop.controller.criteria.RegistrationCriteria;
 import com.costumeshop.core.sql.entity.User;
 import com.costumeshop.core.sql.repository.UserRepository;
 import com.costumeshop.service.JsonCreatorService;
@@ -13,35 +13,39 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin
 @RestController
 @RequestMapping(path = "/api")
 @RequiredArgsConstructor
-public class AuthController {
+public class UserController {
     private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
 
     private final JsonCreatorService jsonCreatorService;
 
-    @CrossOrigin
     @PostMapping(path = "/registration")
     public @ResponseBody ResponseEntity<String> registerNewUser(@RequestBody RegistrationCriteria criteria) {
-        User user = new User();
-        user.setName(criteria.getName());
-        user.setEmail(criteria.getEmail());
-        user.setSurname(criteria.getSurname());
-        user.setPassword(passwordEncoder.encode(criteria.getPassword()));
-        user.setUserRoleId(1);
-        userRepository.save(user);
-
+        User user = userRepository.findByEmail(criteria.getEmail());
+        String responseBody;
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-        String responseBody = jsonCreatorService.createJsonResponse(true, "User registration success!");
+        if (user != null) {
+            responseBody = jsonCreatorService.createJsonResponse(false, "User with that email address already exists!");
+            return new ResponseEntity<>(responseBody, responseHeaders, HttpStatus.FORBIDDEN);
+        }
+
+        User newUser = new User();
+        newUser.setName(criteria.getName());
+        newUser.setEmail(criteria.getEmail());
+        newUser.setSurname(criteria.getSurname());
+        newUser.setPassword(passwordEncoder.encode(criteria.getPassword()));
+        newUser.setUserRoleId(1);
+        userRepository.save(newUser);
+
+        responseBody = jsonCreatorService.createJsonResponse(true, "User registration success!");
         return new ResponseEntity<>(responseBody, responseHeaders, HttpStatus.OK);
     }
 
-    @CrossOrigin
     @PostMapping("/login")
     public @ResponseBody ResponseEntity<String> login(@RequestBody LoginCriteria criteria) {
         User user = userRepository.findByEmail(criteria.getEmail());
@@ -50,13 +54,12 @@ public class AuthController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         if (authenticated) {
-            responseBody = jsonCreatorService.createJsonResponse(true, "Success!");
+            responseBody = jsonCreatorService.createJsonResponse(true, "Logged in!");
             return new ResponseEntity<>(responseBody, responseHeaders, HttpStatus.OK);
         } else {
             responseBody = jsonCreatorService.createJsonResponse(false, "Invalid username or password!");
             return new ResponseEntity<>(responseBody, responseHeaders, HttpStatus.UNAUTHORIZED);
         }
-
     }
 }
 
