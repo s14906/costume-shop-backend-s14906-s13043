@@ -21,7 +21,9 @@ public class Item {
     private Integer idItemSet;
 
     private String description;
+
     private Double price;
+
     private String title;
 
     private Integer quantity;

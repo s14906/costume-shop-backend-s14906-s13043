@@ -1,8 +1,11 @@
 package com.costumeshop.core.sql.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -21,4 +24,10 @@ public class User {
     private String secondName;
     private String surname;
     private Integer userRoleId;
+    private String phone;
+
+    @JsonManagedReference
+    @OneToMany
+    @JoinColumn(name = "id")
+    private List<Address> addresses;
 }

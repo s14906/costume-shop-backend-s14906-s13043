@@ -8,7 +8,12 @@ import lombok.Setter;
 public class RegistrationCriteria {
     private String email;
     private String password;
-    private String nick;
+    private String username;
     private String name;
     private String surname;
+    private String street;
+    private String postalCode;
+    private String city;
+    private String flatNumber;
+    private String phone;
 }
