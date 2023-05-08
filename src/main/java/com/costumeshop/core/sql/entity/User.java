@@ -23,7 +23,11 @@ public class User {
     private String name;
     private String secondName;
     private String surname;
-    private Integer userRoleId;
+
+//    @JsonManagedReference
+    @OneToOne
+    @JoinColumn(name = "user_role_id")
+    private UserRole userRole;
     private String phone;
 
     @JsonManagedReference

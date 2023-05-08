@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(path = "/api")
 @RequiredArgsConstructor
+@CrossOrigin
 public class UserController {
     private final DatabaseService databaseService;
     private final PasswordEncoder passwordEncoder;

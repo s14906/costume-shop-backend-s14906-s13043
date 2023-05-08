@@ -15,6 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/api")
 @RequiredArgsConstructor
+@CrossOrigin
 public class ItemController {
 
     private final ItemRepository itemRepository;

@@ -5,6 +5,7 @@ import com.costumeshop.core.sql.entity.Address;
 import com.costumeshop.core.sql.entity.User;
 import com.costumeshop.core.sql.repository.AddressRepository;
 import com.costumeshop.core.sql.repository.UserRepository;
+import com.costumeshop.core.sql.repository.UserRoleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class DatabaseService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final UserRoleRepository userRoleRepository;
     private final AddressRepository addressRepository;
 
     @Transactional
@@ -24,7 +26,7 @@ public class DatabaseService {
         newUser.setEmail(criteria.getEmail());
         newUser.setSurname(criteria.getSurname());
         newUser.setPassword(passwordEncoder.encode(criteria.getPassword()));
-        newUser.setUserRoleId(1);
+        newUser.setUserRole(userRoleRepository.findById(1).get());
         newUser.setPhone(criteria.getPhone());
         userRepository.save(newUser);
 
