@@ -8,4 +8,6 @@ import lombok.Setter;
 public class ResponseJsonModel {
     private boolean success;
     private String message;
+
+    private Object body;
 }

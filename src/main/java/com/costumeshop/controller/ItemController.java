@@ -8,6 +8,7 @@ import com.costumeshop.core.sql.repository.ItemRepository;
 import com.costumeshop.core.sql.repository.ItemSizeRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.IterableUtils;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping(path = "/api")
 @RequiredArgsConstructor
-@CrossOrigin
+@CrossOrigin()
 public class ItemController {
 
     private final ItemRepository itemRepository;

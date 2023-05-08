@@ -24,6 +24,7 @@ public class DatabaseService {
         User newUser = new User();
         newUser.setName(criteria.getName());
         newUser.setEmail(criteria.getEmail());
+        newUser.setUsername(criteria.getUsername());
         newUser.setSurname(criteria.getSurname());
         newUser.setPassword(passwordEncoder.encode(criteria.getPassword()));
         newUser.setUserRole(userRoleRepository.findById(1).get());

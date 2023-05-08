@@ -1,5 +1,6 @@
 package com.costumeshop.service;
 
+import com.costumeshop.core.security.UserDetailsImpl;
 import com.costumeshop.core.sql.entity.User;
 import com.costumeshop.core.sql.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,13 +19,11 @@ public class ShopUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) {
         User user = userRepository.findByUsername(username);
         if (user == null) {
-            throw new UsernameNotFoundException(username);
+            user = userRepository.findByEmail(username);
+            if (user == null) {
+                throw new UsernameNotFoundException(username);
+            }
         }
-
-        return org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPassword())
-                .authorities("USER")
-                .build();
+        return UserDetailsImpl.build(user);
     }
 }

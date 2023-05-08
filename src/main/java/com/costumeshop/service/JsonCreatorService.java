@@ -19,6 +19,5 @@ public class JsonCreatorService {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-
     }
 }
