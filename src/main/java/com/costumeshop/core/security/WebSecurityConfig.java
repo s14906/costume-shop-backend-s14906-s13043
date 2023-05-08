@@ -23,7 +23,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class WebSecurityConfig {
 
     private final ShopUserDetailsService userDetailsService;
-
     private final AuthEntryPointJwt unauthorizedHandler;
     private final AuthenticationConfiguration configuration;
 
@@ -68,24 +67,5 @@ public class WebSecurityConfig {
         authProvider.setPasswordEncoder(encoder());
         return authProvider;
     }
-
-//    @Bean
-//    public void configureAuthManager(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-//        authenticationManagerBuilder.userDetailsService(userDetailsService).passwordEncoder(encoder());
-//    }
-
-//    @Autowired
-//    void configure(AuthenticationManagerBuilder builder) throws Exception {
-//        builder.userDetailsService(userDetailsService).passwordEncoder(new BCryptPasswordEncoder());
-//    }
-
-
-
-//    @Bean
-//    public AuthenticationManager authManager(HttpSecurity http) throws Exception {
-//        return http.getSharedObject(AuthenticationManagerBuilder.class)
-//                .authenticationProvider(authProvider())
-//                .build();
-//    }
 }
 
