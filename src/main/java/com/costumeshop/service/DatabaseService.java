@@ -37,6 +37,7 @@ public class DatabaseService {
         newUser.setSurname(criteria.getSurname());
         newUser.setPassword(passwordEncoder.encode(criteria.getPassword()));
         newUser.setPhone(criteria.getPhone());
+        newUser.setEmailVerified(0);
         UserRole userRole = userRoleRepository.findById(1).orElseThrow();
         newUser.setUserRoles(Set.of(userRole));
 
@@ -70,6 +71,10 @@ public class DatabaseService {
     }
 
     public void verifyUser(Integer userId) {
-        userRepository.save(userRepository.findById(userId).orElseThrow());
+        User user = userRepository
+                .findById(userId)
+                .orElseThrow();
+        user.setEmailVerified(1);
+        userRepository.save(user);
     }
 }
