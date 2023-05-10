@@ -24,6 +24,7 @@ public class User {
     private String name;
     private String secondName;
     private String surname;
+    private String verificationToken;
 
     @ManyToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
     @JoinTable(
