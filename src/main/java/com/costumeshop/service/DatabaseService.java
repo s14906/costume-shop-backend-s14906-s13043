@@ -1,14 +1,12 @@
 package com.costumeshop.service;
 
 import com.costumeshop.controller.criteria.RegistrationCriteria;
-import com.costumeshop.core.security.jwt.AuthEntryPointJwt;
 import com.costumeshop.core.sql.entity.Address;
 import com.costumeshop.core.sql.entity.User;
 import com.costumeshop.core.sql.entity.UserRole;
 import com.costumeshop.core.sql.repository.AddressRepository;
 import com.costumeshop.core.sql.repository.UserRepository;
 import com.costumeshop.core.sql.repository.UserRoleRepository;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Set;
 import java.util.UUID;
 
@@ -66,5 +63,13 @@ public class DatabaseService {
 
     public User findUserByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+
+    public User findUserByVerificationToken(String verificationToken) {
+        return userRepository.findByVerificationToken(verificationToken);
+    }
+
+    public void verifyUser(Integer userId) {
+        userRepository.save(userRepository.findById(userId).orElseThrow());
     }
 }

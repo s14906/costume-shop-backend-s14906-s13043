@@ -1,13 +1,9 @@
 package com.costumeshop.service;
 
 import com.costumeshop.core.sql.entity.User;
-import com.costumeshop.core.sql.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
-import org.springframework.core.env.Environment;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -35,7 +31,7 @@ public class MailService {
         helper.setSubject(subject);
 
         String siteUrl = propertyService.getProperty("site.url");
-        String verificationUrl = siteUrl + "/verify?token=" + user.getVerificationToken();
+        String verificationUrl = siteUrl + "/registration-verification?token=" + user.getVerificationToken();
 
         String contentWithUsernameAndUrl = content.replace("[url]", verificationUrl)
                 .replace("[username]", user.getUsername());

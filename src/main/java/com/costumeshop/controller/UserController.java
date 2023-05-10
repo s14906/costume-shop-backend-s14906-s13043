@@ -7,6 +7,7 @@ import com.costumeshop.core.security.jwt.JwtUtils;
 import com.costumeshop.core.sql.entity.User;
 import com.costumeshop.model.response.JwtResponse;
 import com.costumeshop.model.response.RegistrationResponse;
+import com.costumeshop.model.response.UserResponse;
 import com.costumeshop.service.DatabaseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -93,6 +94,43 @@ public class UserController {
                 .success(true)
                 .message("Login successful! Hello, " + userDetails.getUsername() + "!")
                 .build(), responseHeaders, HttpStatus.OK);
+    }
+
+    @GetMapping("/users")
+    public @ResponseBody ResponseEntity<?> getUserByVerificationToken(@RequestParam String verificationToken) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        User user = databaseService.findUserByVerificationToken(verificationToken);
+        if (user != null) {
+            return new ResponseEntity<>(UserResponse.builder()
+                    .user(user)
+                    .success(true)
+                    .message("User found!")
+                    .build(), responseHeaders, HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(UserResponse.builder()
+                    .success(false)
+                    .message("User not found!")
+                    .build(), responseHeaders, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PostMapping("/verification")
+    public @ResponseBody ResponseEntity<?> verifyUser(@RequestParam Integer userId) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            databaseService.verifyUser(userId);
+            return new ResponseEntity<>(UserResponse.builder()
+                    .success(true)
+                    .message("User verified!")
+                    .build(), responseHeaders, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(UserResponse.builder()
+                    .success(false)
+                    .message("Failed to verify user: " + e.getMessage())
+                    .build(), responseHeaders, HttpStatus.OK);
+        }
     }
 }
 
