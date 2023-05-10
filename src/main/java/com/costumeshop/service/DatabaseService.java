@@ -3,6 +3,7 @@ package com.costumeshop.service;
 import com.costumeshop.controller.criteria.RegistrationCriteria;
 import com.costumeshop.core.sql.entity.Address;
 import com.costumeshop.core.sql.entity.User;
+import com.costumeshop.core.sql.entity.UserRole;
 import com.costumeshop.core.sql.repository.AddressRepository;
 import com.costumeshop.core.sql.repository.UserRepository;
 import com.costumeshop.core.sql.repository.UserRoleRepository;
@@ -10,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -27,8 +30,9 @@ public class DatabaseService {
         newUser.setUsername(criteria.getUsername());
         newUser.setSurname(criteria.getSurname());
         newUser.setPassword(passwordEncoder.encode(criteria.getPassword()));
-        newUser.setUserRole(userRoleRepository.findById(1).get());
         newUser.setPhone(criteria.getPhone());
+        UserRole userRole = userRoleRepository.findById(1).orElseThrow();
+        newUser.setUserRoles(Set.of(userRole));
         userRepository.save(newUser);
 
         Address address = new Address();

@@ -2,7 +2,7 @@ package com.costumeshop.controller;
 
 import com.costumeshop.controller.criteria.LoginCriteria;
 import com.costumeshop.controller.criteria.RegistrationCriteria;
-import com.costumeshop.core.security.UserDetailsImpl;
+import com.costumeshop.core.security.user.UserDetailsImpl;
 import com.costumeshop.core.security.jwt.JwtUtils;
 import com.costumeshop.core.sql.entity.User;
 import com.costumeshop.model.response.JwtResponse;

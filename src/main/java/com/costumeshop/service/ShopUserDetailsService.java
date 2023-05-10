@@ -1,6 +1,6 @@
 package com.costumeshop.service;
 
-import com.costumeshop.core.security.UserDetailsImpl;
+import com.costumeshop.core.security.user.UserDetailsImpl;
 import com.costumeshop.core.sql.entity.User;
 import com.costumeshop.core.sql.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

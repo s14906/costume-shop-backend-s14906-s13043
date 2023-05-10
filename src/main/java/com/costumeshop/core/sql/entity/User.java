@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -24,10 +25,14 @@ public class User {
     private String secondName;
     private String surname;
 
-//    @JsonManagedReference
-    @OneToOne
-    @JoinColumn(name = "user_role_id")
-    private UserRole userRole;
+    @ManyToMany(cascade = {CascadeType.ALL})
+    @JoinTable(
+            name = "user_user_role",
+            joinColumns = { @JoinColumn(name = "user_id") },
+            inverseJoinColumns = { @JoinColumn(name = "role_id") }
+    )
+    private Set<UserRole> userRoles;
+
     private String phone;
 
     @JsonManagedReference

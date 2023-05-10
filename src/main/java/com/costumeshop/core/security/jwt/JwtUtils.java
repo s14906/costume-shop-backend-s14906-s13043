@@ -1,6 +1,6 @@
 package com.costumeshop.core.security.jwt;
 
-import com.costumeshop.core.security.UserDetailsImpl;
+import com.costumeshop.core.security.user.UserDetailsImpl;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

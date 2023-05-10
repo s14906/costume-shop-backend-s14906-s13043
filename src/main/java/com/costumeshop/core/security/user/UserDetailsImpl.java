@@ -1,4 +1,4 @@
-package com.costumeshop.core.security;
+package com.costumeshop.core.security.user;
 
 import com.costumeshop.core.sql.entity.User;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -11,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Getter
 @Setter
@@ -38,8 +37,8 @@ public class UserDetailsImpl implements UserDetails {
 
     public static UserDetailsImpl build(User user) {
 
-        List<GrantedAuthority> authorities = Stream.of("USER")
-                .map(SimpleGrantedAuthority::new)
+        List<GrantedAuthority> authorities = user.getUserRoles().stream()
+                .map(role -> new SimpleGrantedAuthority(role.getRole()))
                 .collect(Collectors.toList());
 
         return new UserDetailsImpl(
