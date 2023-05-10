@@ -24,6 +24,6 @@ public class Address {
 
     @JsonBackReference
     @ManyToOne
-    @JoinColumn(name = "id_user")
+    @JoinColumn(name = "user_id")
     private User user;
 }

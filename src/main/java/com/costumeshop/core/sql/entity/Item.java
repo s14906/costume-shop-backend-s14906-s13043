@@ -16,9 +16,9 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private Integer idCategory;
+    private Integer categoryId;
 
-    private Integer idItemSet;
+    private Integer itemSetId;
 
     private String description;
 
