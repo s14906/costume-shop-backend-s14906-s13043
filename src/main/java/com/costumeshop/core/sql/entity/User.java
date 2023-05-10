@@ -25,7 +25,7 @@ public class User {
     private String secondName;
     private String surname;
 
-    @ManyToMany(cascade = {CascadeType.ALL})
+    @ManyToMany(cascade = {CascadeType.ALL}, fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_user_role",
             joinColumns = { @JoinColumn(name = "user_id") },
