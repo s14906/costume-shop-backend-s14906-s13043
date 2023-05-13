@@ -18,6 +18,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,11 +39,19 @@ public class UserController {
     public @ResponseBody ResponseEntity<?> registerNewUser(@RequestBody RegistrationCriteria criteria) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-        User existingUser = databaseService.findUserByEmail(criteria.getEmail());
-        if (existingUser != null) {
+        User existingUserByEmail = databaseService.findUserByEmail(criteria.getEmail());
+        if (existingUserByEmail != null) {
             return new ResponseEntity<>(RegistrationResponse.builder()
                     .success(false)
                     .message("User with that email address already exists!")
+                    .build(), responseHeaders, HttpStatus.FORBIDDEN);
+        }
+
+        User existingUserByUsername = databaseService.findByUsername(criteria.getEmail());
+        if (existingUserByUsername != null) {
+            return new ResponseEntity<>(RegistrationResponse.builder()
+                    .success(false)
+                    .message("User with that username address already exists!")
                     .build(), responseHeaders, HttpStatus.FORBIDDEN);
         }
 
@@ -66,6 +75,15 @@ public class UserController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
 
+        User user = databaseService.findByUsernameOrEmail(criteria.getEmail());
+        Integer emailVerified = user.getEmailVerified();
+        if (emailVerified == null || emailVerified.equals(0)) {
+            return new ResponseEntity<>(JwtResponse.builder()
+                    .success(false)
+                    .message("User account is not verified! Click on the verification link that has been mailed to you.")
+                    .build(), responseHeaders, HttpStatus.UNAUTHORIZED);
+        }
+
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
@@ -82,7 +100,7 @@ public class UserController {
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         List<String> roles = userDetails.getAuthorities().stream()
-                .map(item -> item.getAuthority())
+                .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
         return new ResponseEntity<>(JwtResponse.builder()

@@ -70,11 +70,23 @@ public class DatabaseService {
         return userRepository.findByVerificationToken(verificationToken);
     }
 
+    public User findByUsernameOrEmail(String username) {
+        User user = userRepository.findByUsername(username);
+        if (user == null) {
+            user = userRepository.findByEmail(username);
+        }
+        return user;
+    }
+
     public void verifyUser(Integer userId) {
         User user = userRepository
                 .findById(userId)
                 .orElseThrow();
         user.setEmailVerified(1);
         userRepository.save(user);
+    }
+
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 }
