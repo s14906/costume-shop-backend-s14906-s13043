@@ -5,7 +5,7 @@ import com.costumeshop.controller.criteria.RegistrationCriteria;
 import com.costumeshop.core.security.user.UserDetailsImpl;
 import com.costumeshop.core.security.jwt.JwtUtils;
 import com.costumeshop.core.sql.entity.User;
-import com.costumeshop.model.response.JwtResponse;
+import com.costumeshop.model.response.UserLoginResponse;
 import com.costumeshop.model.response.RegistrationResponse;
 import com.costumeshop.model.response.UserResponse;
 import com.costumeshop.service.DatabaseService;
@@ -78,7 +78,7 @@ public class UserController {
         User user = databaseService.findByUsernameOrEmail(criteria.getEmail());
         Integer emailVerified = user.getEmailVerified();
         if (emailVerified == null || emailVerified.equals(0)) {
-            return new ResponseEntity<>(JwtResponse.builder()
+            return new ResponseEntity<>(UserLoginResponse.builder()
                     .success(false)
                     .message("User account is not verified! Click on the verification link that has been mailed to you.")
                     .build(), responseHeaders, HttpStatus.UNAUTHORIZED);
@@ -89,7 +89,7 @@ public class UserController {
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(criteria.getEmail(), criteria.getPassword()));
         } catch (AuthenticationException e) {
-            return new ResponseEntity<>(JwtResponse.builder()
+            return new ResponseEntity<>(UserLoginResponse.builder()
                     .success(false)
                     .message("Authentication error! Is your email/username/password valid?")
                     .build(), responseHeaders, HttpStatus.UNAUTHORIZED);
@@ -103,7 +103,7 @@ public class UserController {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        return new ResponseEntity<>(JwtResponse.builder()
+        return new ResponseEntity<>(UserLoginResponse.builder()
                 .token(token)
                 .id(userDetails.getId())
                 .username(userDetails.getUsername())
