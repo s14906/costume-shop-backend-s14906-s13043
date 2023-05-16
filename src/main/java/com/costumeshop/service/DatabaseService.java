@@ -96,9 +96,11 @@ public class DatabaseService {
     public User findUserById(Integer id) {
         return userRepository.findById(id).orElseThrow();
     }
+
     public Item findItemById(Integer id) {
         return itemRepository.findById(id).orElseThrow();
     }
+
     public List<Item> findAllItems() {
         return IterableUtils.toList(itemRepository.findAll());
     }
@@ -106,6 +108,7 @@ public class DatabaseService {
     public ItemSize findItemSizeById(Integer id) {
         return itemSizeRepository.findById(id).orElseThrow();
     }
+
     public List<ItemSize> findAllItemSizes() {
         return IterableUtils.toList(itemSizeRepository.findAll());
     }
@@ -122,16 +125,20 @@ public class DatabaseService {
         List<ItemCart> existingCartItems =
                 itemCartRepository.findAllByUserAndItemAndItemSize(user, item, itemSize);
 
-        if (!existingCartItems.isEmpty()) {
-            existingCartItems.forEach(itemCart ->
-                    itemCart.setItemCount(itemCart.getItemCount() + 1));
-        }
-
         ItemCart itemCart = new ItemCart();
         itemCart.setUser(user);
         itemCart.setItem(item);
         itemCart.setItemSize(itemSize);
-        itemCartRepository.save(itemCart);
+
+        if (!existingCartItems.isEmpty()) {
+            existingCartItems.forEach(existingCartItem -> {
+                existingCartItem.setItemCount(existingCartItem.getItemCount() + 1);
+                itemCartRepository.save(existingCartItem);
+            });
+        } else {
+            itemCart.setItemCount(1);
+            itemCartRepository.save(itemCart);
+        }
     }
 
     public List<ItemCart> findCartItemsForUser(Integer userId) {
