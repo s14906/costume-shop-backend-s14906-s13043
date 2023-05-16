@@ -1,11 +1,11 @@
-package com.costumeshop.controller.criteria;
+package com.costumeshop.model.request;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class RegistrationCriteria {
+public class RegistrationRequest {
     private String email;
     private String password;
     private String username;

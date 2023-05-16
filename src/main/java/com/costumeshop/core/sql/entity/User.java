@@ -1,5 +1,6 @@
 package com.costumeshop.core.sql.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -40,4 +41,9 @@ public class User {
     @OneToMany
     @JoinColumn(name = "id")
     private List<Address> addresses;
+
+    @JsonBackReference
+    @OneToMany
+    @JoinColumn(name = "id")
+    private List<ItemCart> itemCarts;
 }

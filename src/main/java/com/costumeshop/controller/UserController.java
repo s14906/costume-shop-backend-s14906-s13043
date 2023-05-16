@@ -1,7 +1,7 @@
 package com.costumeshop.controller;
 
-import com.costumeshop.controller.criteria.LoginCriteria;
-import com.costumeshop.controller.criteria.RegistrationCriteria;
+import com.costumeshop.model.request.LoginRequest;
+import com.costumeshop.model.request.RegistrationRequest;
 import com.costumeshop.core.security.user.UserDetailsImpl;
 import com.costumeshop.core.security.jwt.JwtUtils;
 import com.costumeshop.core.sql.entity.User;
@@ -36,10 +36,10 @@ public class UserController {
 
 
     @PostMapping(path = "/registration")
-    public @ResponseBody ResponseEntity<?> registerNewUser(@RequestBody RegistrationCriteria criteria) {
+    public @ResponseBody ResponseEntity<?> registerNewUser(@RequestBody RegistrationRequest request) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-        User existingUserByEmail = databaseService.findUserByEmail(criteria.getEmail());
+        User existingUserByEmail = databaseService.findUserByEmail(request.getEmail());
         if (existingUserByEmail != null) {
             return new ResponseEntity<>(RegistrationResponse.builder()
                     .success(false)
@@ -47,7 +47,7 @@ public class UserController {
                     .build(), responseHeaders, HttpStatus.FORBIDDEN);
         }
 
-        User existingUserByUsername = databaseService.findByUsername(criteria.getEmail());
+        User existingUserByUsername = databaseService.findUserByUsername(request.getEmail());
         if (existingUserByUsername != null) {
             return new ResponseEntity<>(RegistrationResponse.builder()
                     .success(false)
@@ -56,7 +56,7 @@ public class UserController {
         }
 
         try {
-            databaseService.insertNewRegisteredUser(criteria);
+            databaseService.insertNewRegisteredUser(request);
         } catch (Exception e) {
             return new ResponseEntity<>(RegistrationResponse.builder()
                     .success(false)
@@ -71,11 +71,11 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public @ResponseBody ResponseEntity<?> login(@RequestBody LoginCriteria criteria) {
+    public @ResponseBody ResponseEntity<?> login(@RequestBody LoginRequest request) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-        User user = databaseService.findByUsernameOrEmail(criteria.getEmail());
+        User user = databaseService.findUserByUsernameOrEmail(request.getEmail());
         Integer emailVerified = user.getEmailVerified();
         if (emailVerified == null || emailVerified.equals(0)) {
             return new ResponseEntity<>(UserLoginResponse.builder()
@@ -87,7 +87,7 @@ public class UserController {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(criteria.getEmail(), criteria.getPassword()));
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         } catch (AuthenticationException e) {
             return new ResponseEntity<>(UserLoginResponse.builder()
                     .success(false)

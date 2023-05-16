@@ -1,19 +1,18 @@
 package com.costumeshop.service;
 
-import com.costumeshop.controller.criteria.RegistrationCriteria;
-import com.costumeshop.core.sql.entity.Address;
-import com.costumeshop.core.sql.entity.User;
-import com.costumeshop.core.sql.entity.UserRole;
-import com.costumeshop.core.sql.repository.AddressRepository;
-import com.costumeshop.core.sql.repository.UserRepository;
-import com.costumeshop.core.sql.repository.UserRoleRepository;
+import com.costumeshop.core.sql.entity.*;
+import com.costumeshop.core.sql.repository.*;
+import com.costumeshop.model.request.AddToCartRequest;
+import com.costumeshop.model.request.RegistrationRequest;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.IterableUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -26,17 +25,21 @@ public class DatabaseService {
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
     private final AddressRepository addressRepository;
+    private final ItemRepository itemRepository;
+    private final ItemSizeRepository itemSizeRepository;
+    private final ItemCartRepository itemCartRepository;
+    private final ItemColorRepository itemColorRepository;
     private final MailService mailService;
 
     @Transactional
-    public void insertNewRegisteredUser(RegistrationCriteria criteria) {
+    public void insertNewRegisteredUser(RegistrationRequest request) {
         User newUser = new User();
-        newUser.setName(criteria.getName());
-        newUser.setEmail(criteria.getEmail());
-        newUser.setUsername(criteria.getUsername());
-        newUser.setSurname(criteria.getSurname());
-        newUser.setPassword(passwordEncoder.encode(criteria.getPassword()));
-        newUser.setPhone(criteria.getPhone());
+        newUser.setName(request.getName());
+        newUser.setEmail(request.getEmail());
+        newUser.setUsername(request.getUsername());
+        newUser.setSurname(request.getSurname());
+        newUser.setPassword(passwordEncoder.encode(request.getPassword()));
+        newUser.setPhone(request.getPhone());
         newUser.setEmailVerified(0);
         UserRole userRole = userRoleRepository.findById(1).orElseThrow();
         newUser.setUserRoles(Set.of(userRole));
@@ -54,10 +57,10 @@ public class DatabaseService {
         }
 
         Address address = new Address();
-        address.setCity(criteria.getCity());
-        address.setStreet(criteria.getStreet());
-        address.setPostalCode(criteria.getPostalCode());
-        address.setFlatNumber(criteria.getFlatNumber());
+        address.setCity(request.getCity());
+        address.setStreet(request.getStreet());
+        address.setPostalCode(request.getPostalCode());
+        address.setFlatNumber(request.getFlatNumber());
         address.setUser(newUser);
         addressRepository.save(address);
     }
@@ -70,7 +73,7 @@ public class DatabaseService {
         return userRepository.findByVerificationToken(verificationToken);
     }
 
-    public User findByUsernameOrEmail(String username) {
+    public User findUserByUsernameOrEmail(String username) {
         User user = userRepository.findByUsername(username);
         if (user == null) {
             user = userRepository.findByEmail(username);
@@ -86,7 +89,52 @@ public class DatabaseService {
         userRepository.save(user);
     }
 
-    public User findByUsername(String username) {
+    public User findUserByUsername(String username) {
         return userRepository.findByUsername(username);
+    }
+
+    public User findUserById(Integer id) {
+        return userRepository.findById(id).orElseThrow();
+    }
+    public Item findItemById(Integer id) {
+        return itemRepository.findById(id).orElseThrow();
+    }
+    public List<Item> findAllItems() {
+        return IterableUtils.toList(itemRepository.findAll());
+    }
+
+    public ItemSize findItemSizeById(Integer id) {
+        return itemSizeRepository.findById(id).orElseThrow();
+    }
+    public List<ItemSize> findAllItemSizes() {
+        return IterableUtils.toList(itemSizeRepository.findAll());
+    }
+
+    public List<ItemColor> findAllItemColors() {
+        return IterableUtils.toList(itemColorRepository.findAll());
+    }
+
+    public void insertItemToCart(AddToCartRequest request) {
+        User user = findUserById(request.getUserId());
+        Item item = findItemById(request.getItemId());
+        ItemSize itemSize = findItemSizeById(request.getItemSizeId());
+
+        List<ItemCart> existingCartItems =
+                itemCartRepository.findAllByUserAndItemAndItemSize(user, item, itemSize);
+
+        if (!existingCartItems.isEmpty()) {
+            existingCartItems.forEach(itemCart ->
+                    itemCart.setItemCount(itemCart.getItemCount() + 1));
+        }
+
+        ItemCart itemCart = new ItemCart();
+        itemCart.setUser(user);
+        itemCart.setItem(item);
+        itemCart.setItemSize(itemSize);
+        itemCartRepository.save(itemCart);
+    }
+
+    public List<ItemCart> findCartItemsForUser(Integer userId) {
+        return IterableUtils.toList(itemCartRepository.findAllByUserId(userId));
     }
 }
