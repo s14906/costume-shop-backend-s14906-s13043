@@ -1,12 +1,12 @@
 package com.costumeshop.controller;
 
+import com.costumeshop.core.security.jwt.JwtUtils;
+import com.costumeshop.core.security.user.UserDetailsImpl;
+import com.costumeshop.core.sql.entity.User;
 import com.costumeshop.model.request.LoginRequest;
 import com.costumeshop.model.request.RegistrationRequest;
-import com.costumeshop.core.security.user.UserDetailsImpl;
-import com.costumeshop.core.security.jwt.JwtUtils;
-import com.costumeshop.core.sql.entity.User;
-import com.costumeshop.model.response.UserLoginResponse;
 import com.costumeshop.model.response.RegistrationResponse;
+import com.costumeshop.model.response.UserLoginResponse;
 import com.costumeshop.model.response.UserResponse;
 import com.costumeshop.service.DatabaseService;
 import lombok.RequiredArgsConstructor;
@@ -76,6 +76,13 @@ public class UserController {
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
 
         User user = databaseService.findUserByUsernameOrEmail(request.getEmail());
+        if (user == null) {
+            return new ResponseEntity<>(UserLoginResponse.builder()
+                    .success(false)
+                    .message("User with that username or email not found in the database!")
+                    .build(), responseHeaders, HttpStatus.NOT_FOUND);
+        }
+
         Integer emailVerified = user.getEmailVerified();
         if (emailVerified == null || emailVerified.equals(0)) {
             return new ResponseEntity<>(UserLoginResponse.builder()
