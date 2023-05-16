@@ -9,4 +9,5 @@ public class AddToCartRequest {
     private Integer userId;
     private Integer itemId;
     private Integer itemSizeId;
+    private Integer itemAmount;
 }

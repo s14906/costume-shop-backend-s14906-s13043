@@ -29,6 +29,6 @@ public class ItemCart {
     @JoinColumn(name = "item_size_id")
     private ItemSize itemSize;
 
-    private Integer itemCount;
+    private Integer itemAmount;
 
 }

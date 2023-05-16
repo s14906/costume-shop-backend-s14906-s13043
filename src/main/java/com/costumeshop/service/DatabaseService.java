@@ -132,11 +132,11 @@ public class DatabaseService {
 
         if (!existingCartItems.isEmpty()) {
             existingCartItems.forEach(existingCartItem -> {
-                existingCartItem.setItemCount(existingCartItem.getItemCount() + 1);
+                existingCartItem.setItemAmount(existingCartItem.getItemAmount() + request.getItemAmount());
                 itemCartRepository.save(existingCartItem);
             });
         } else {
-            itemCart.setItemCount(1);
+            itemCart.setItemAmount(request.getItemAmount());
             itemCartRepository.save(itemCart);
         }
     }
