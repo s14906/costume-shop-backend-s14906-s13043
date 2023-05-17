@@ -2,6 +2,7 @@ package com.costumeshop.service;
 
 import com.costumeshop.core.sql.entity.*;
 import com.costumeshop.core.sql.repository.*;
+import com.costumeshop.model.request.AddAddressRequest;
 import com.costumeshop.model.request.AddToCartRequest;
 import com.costumeshop.model.request.RegistrationRequest;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +20,8 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class DatabaseService {
+    //TODO: proper exception throwing/catching
     private static final Logger logger = LoggerFactory.getLogger(DatabaseService.class);
-
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
@@ -143,5 +144,23 @@ public class DatabaseService {
 
     public List<ItemCart> findCartItemsForUser(Integer userId) {
         return IterableUtils.toList(itemCartRepository.findAllByUserId(userId));
+    }
+
+    public void insertNewAddressForUser(AddAddressRequest request) {
+        //TODO: exception catching
+        User user = userRepository.findById(request.getUserId()).orElseThrow();
+
+        Address address = new Address();
+        address.setUser(user);
+        address.setCity(request.getCity());
+        address.setStreet(request.getStreet());
+        address.setFlatNumber(request.getFlatNumber());
+        address.setPostalCode(request.getPostalCode());
+        addressRepository.save(address);
+    }
+
+    public Set<Address> getAddressesForUser(Integer userId) {
+        User user = userRepository.findById(userId).orElseThrow();
+        return user.getAddresses();
     }
 }

@@ -2,12 +2,12 @@ package com.costumeshop.controller;
 
 import com.costumeshop.core.security.jwt.JwtUtils;
 import com.costumeshop.core.security.user.UserDetailsImpl;
+import com.costumeshop.core.sql.entity.Address;
 import com.costumeshop.core.sql.entity.User;
+import com.costumeshop.model.request.AddAddressRequest;
 import com.costumeshop.model.request.LoginRequest;
 import com.costumeshop.model.request.RegistrationRequest;
-import com.costumeshop.model.response.RegistrationResponse;
-import com.costumeshop.model.response.UserLoginResponse;
-import com.costumeshop.model.response.UserResponse;
+import com.costumeshop.model.response.*;
 import com.costumeshop.service.DatabaseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +23,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -30,6 +31,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @CrossOrigin
 public class UserController {
+
+    //TODO: logging
     private final DatabaseService databaseService;
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
@@ -114,6 +117,9 @@ public class UserController {
                 .token(token)
                 .id(userDetails.getId())
                 .username(userDetails.getUsername())
+                .name(user.getName())
+                .surname(user.getSurname())
+                .phone(user.getPhone())
                 .email(userDetails.getEmail())
                 .roles(roles)
                 .success(true)
@@ -156,6 +162,46 @@ public class UserController {
                     .message("Failed to verify user: " + e.getMessage())
                     .build(), responseHeaders, HttpStatus.OK);
         }
+    }
+
+    @PostMapping("/add-address")
+    public @ResponseBody ResponseEntity<?> addAddress(@RequestBody AddAddressRequest request) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            databaseService.insertNewAddressForUser(request);
+        } catch (Exception e) {
+            return new ResponseEntity<>(AddAddressResponse.builder()
+                    .success(false)
+                    .message("Error occurred when adding address!")
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(AddAddressResponse.builder()
+                .success(true)
+                .message("Address added!")
+                .build(), responseHeaders, HttpStatus.OK);
+    }
+
+    @GetMapping("/get-addresses")
+    public @ResponseBody ResponseEntity<?> getAddressesForUser(@RequestParam Integer userId) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        Set<Address> addresses;
+        try {
+            addresses = databaseService.getAddressesForUser(userId);
+        } catch (Exception e) {
+            return new ResponseEntity<>(GetAddressesResponse.builder()
+                    .success(false)
+                    .message("Error occurred when retrieving addresses!")
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<>(GetAddressesResponse.builder()
+                .success(true)
+                .message("Addresses retrieved!")
+                .addresses(addresses)
+                .build(), responseHeaders, HttpStatus.OK);
+
     }
 }
 

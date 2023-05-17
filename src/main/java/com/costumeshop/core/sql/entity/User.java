@@ -1,6 +1,5 @@
 package com.costumeshop.core.sql.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -37,12 +36,12 @@ public class User {
 
     private String phone;
 
+    //TODO: define all OneToMany and ManyToOne relationships just like that and rework the db service
     @JsonManagedReference
-    @OneToMany
-    @JoinColumn(name = "id")
-    private List<Address> addresses;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
+    private Set<Address> addresses;
 
-    @JsonBackReference
+    @JsonManagedReference
     @OneToMany
     @JoinColumn(name = "id")
     private List<ItemCart> itemCarts;
