@@ -221,5 +221,25 @@ public class UserController {
                 .message("Address removed!")
                 .build(), responseHeaders, HttpStatus.OK);
     }
+
+    @PostMapping("/change-password")
+    public @ResponseBody ResponseEntity<?> changePassword(@RequestParam Integer userId,
+                                                          @RequestParam String newPassword) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            databaseService.changePasswordForUser(userId, newPassword);
+        } catch (Exception e) {
+            return new ResponseEntity<>(SimpleResponse.builder()
+                    .success(false)
+                    .message("Error occurred when changing password!")
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(SimpleResponse.builder()
+                .success(true)
+                .message("Password changed!")
+                .build(), responseHeaders, HttpStatus.OK);
+    }
+
 }
 

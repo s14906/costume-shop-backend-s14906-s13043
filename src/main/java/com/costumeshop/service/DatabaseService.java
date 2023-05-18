@@ -31,6 +31,7 @@ public class DatabaseService {
     private final ItemCartRepository itemCartRepository;
     private final ItemColorRepository itemColorRepository;
     private final MailService mailService;
+    private final PasswordService passwordService;
 
     @Transactional
     public void insertNewRegisteredUser(RegistrationRequest request) {
@@ -167,5 +168,17 @@ public class DatabaseService {
     public void deleteAddress(Integer addressId) {
         Address address = addressRepository.findById(addressId).orElseThrow();
         addressRepository.delete(address);
+    }
+
+    public void changePasswordForUser(Integer userId, String newPassword) {
+        User user = userRepository.findById(userId).orElseThrow();
+        String encodedPassword = passwordService.encodePassword(newPassword);
+
+        if (encodedPassword != null) {
+            user.setPassword(encodedPassword);
+            userRepository.save(user);
+        } else {
+            throw new RuntimeException("Error occurred while changing password");
+        }
     }
 }
