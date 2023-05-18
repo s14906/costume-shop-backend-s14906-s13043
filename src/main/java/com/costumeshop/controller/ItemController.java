@@ -5,8 +5,8 @@ import com.costumeshop.core.sql.entity.ItemCart;
 import com.costumeshop.core.sql.entity.ItemColor;
 import com.costumeshop.core.sql.entity.ItemSize;
 import com.costumeshop.model.request.AddToCartRequest;
-import com.costumeshop.model.response.AddToCartResponse;
 import com.costumeshop.model.response.CartResponse;
+import com.costumeshop.model.response.SimpleResponse;
 import com.costumeshop.service.DatabaseService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -49,7 +49,7 @@ public class ItemController {
             databaseService.insertItemToCart(request);
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            return new ResponseEntity<>(AddToCartResponse.builder()
+            return new ResponseEntity<>(SimpleResponse.builder()
                     .success(true)
                     .message("Item added to cart!")
                     .build(), responseHeaders, HttpStatus.OK);
@@ -58,7 +58,7 @@ public class ItemController {
             logger.error("Failed to add item to cart: " + e.getMessage());
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-            return new ResponseEntity<>(AddToCartResponse.builder()
+            return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
                     .message("Failed to add item to cart!")
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);

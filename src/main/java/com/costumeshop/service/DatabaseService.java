@@ -163,4 +163,9 @@ public class DatabaseService {
         User user = userRepository.findById(userId).orElseThrow();
         return user.getAddresses();
     }
+
+    public void deleteAddress(Integer addressId) {
+        Address address = addressRepository.findById(addressId).orElseThrow();
+        addressRepository.delete(address);
+    }
 }

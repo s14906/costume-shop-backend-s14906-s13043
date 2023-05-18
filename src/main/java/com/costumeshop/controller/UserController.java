@@ -44,7 +44,7 @@ public class UserController {
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         User existingUserByEmail = databaseService.findUserByEmail(request.getEmail());
         if (existingUserByEmail != null) {
-            return new ResponseEntity<>(RegistrationResponse.builder()
+            return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
                     .message("User with that email address already exists!")
                     .build(), responseHeaders, HttpStatus.FORBIDDEN);
@@ -52,7 +52,7 @@ public class UserController {
 
         User existingUserByUsername = databaseService.findUserByUsername(request.getEmail());
         if (existingUserByUsername != null) {
-            return new ResponseEntity<>(RegistrationResponse.builder()
+            return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
                     .message("User with that username address already exists!")
                     .build(), responseHeaders, HttpStatus.FORBIDDEN);
@@ -61,13 +61,13 @@ public class UserController {
         try {
             databaseService.insertNewRegisteredUser(request);
         } catch (Exception e) {
-            return new ResponseEntity<>(RegistrationResponse.builder()
+            return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
                     .message("Failed to insert new user data into the database!")
                     .build(), responseHeaders, HttpStatus.FORBIDDEN);
         }
 
-        return new ResponseEntity<>(RegistrationResponse.builder()
+        return new ResponseEntity<>(SimpleResponse.builder()
                 .success(true)
                 .message("Registration successful!")
                 .build(), responseHeaders, HttpStatus.OK);
@@ -80,7 +80,7 @@ public class UserController {
 
         User user = databaseService.findUserByUsernameOrEmail(request.getEmail());
         if (user == null) {
-            return new ResponseEntity<>(UserLoginResponse.builder()
+            return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
                     .message("User with that username or email not found in the database!")
                     .build(), responseHeaders, HttpStatus.NOT_FOUND);
@@ -88,7 +88,7 @@ public class UserController {
 
         Integer emailVerified = user.getEmailVerified();
         if (emailVerified == null || emailVerified.equals(0)) {
-            return new ResponseEntity<>(UserLoginResponse.builder()
+            return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
                     .message("User account is not verified! Click on the verification link that has been mailed to you.")
                     .build(), responseHeaders, HttpStatus.UNAUTHORIZED);
@@ -99,7 +99,7 @@ public class UserController {
             authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
         } catch (AuthenticationException e) {
-            return new ResponseEntity<>(UserLoginResponse.builder()
+            return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
                     .message("Authentication error! Is your email/username/password valid?")
                     .build(), responseHeaders, HttpStatus.UNAUTHORIZED);
@@ -152,12 +152,12 @@ public class UserController {
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
             databaseService.verifyUser(userId);
-            return new ResponseEntity<>(UserResponse.builder()
+            return new ResponseEntity<>(SimpleResponse.builder()
                     .success(true)
                     .message("User verified!")
                     .build(), responseHeaders, HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>(UserResponse.builder()
+            return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
                     .message("Failed to verify user: " + e.getMessage())
                     .build(), responseHeaders, HttpStatus.OK);
@@ -171,12 +171,12 @@ public class UserController {
         try {
             databaseService.insertNewAddressForUser(request);
         } catch (Exception e) {
-            return new ResponseEntity<>(AddAddressResponse.builder()
+            return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
                     .message("Error occurred when adding address!")
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(AddAddressResponse.builder()
+        return new ResponseEntity<>(SimpleResponse.builder()
                 .success(true)
                 .message("Address added!")
                 .build(), responseHeaders, HttpStatus.OK);
@@ -202,6 +202,24 @@ public class UserController {
                 .addresses(addresses)
                 .build(), responseHeaders, HttpStatus.OK);
 
+    }
+
+    @PostMapping("/remove-address")
+    public @ResponseBody ResponseEntity<?> removeAddress(@RequestParam Integer addressId) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            databaseService.deleteAddress(addressId);
+        } catch (Exception e) {
+            return new ResponseEntity<>(SimpleResponse.builder()
+                    .success(false)
+                    .message("Error occurred when removing address!")
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(SimpleResponse.builder()
+                .success(true)
+                .message("Address removed!")
+                .build(), responseHeaders, HttpStatus.OK);
     }
 }
 
