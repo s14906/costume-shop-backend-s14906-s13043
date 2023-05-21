@@ -1,17 +1,17 @@
 package com.costumeshop.model.response;
 
-import com.costumeshop.core.sql.entity.Address;
+import com.costumeshop.model.dto.AddressDTO;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.Set;
+import java.util.List;
 
 @Getter
 public class GetAddressesResponse extends AbstractResponse {
-    private final Set<Address> addresses;
+    private final List<AddressDTO> addresses;
 
     @Builder
-    public GetAddressesResponse(boolean success, String message, Set<Address> addresses) {
+    public GetAddressesResponse(boolean success, String message, List<AddressDTO> addresses) {
         super(success, message);
         this.addresses = addresses;
     }

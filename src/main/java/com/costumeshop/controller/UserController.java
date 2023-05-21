@@ -2,12 +2,15 @@ package com.costumeshop.controller;
 
 import com.costumeshop.core.security.jwt.JwtUtils;
 import com.costumeshop.core.security.user.UserDetailsImpl;
-import com.costumeshop.core.sql.entity.Address;
 import com.costumeshop.core.sql.entity.User;
-import com.costumeshop.model.request.AddAddressRequest;
-import com.costumeshop.model.request.LoginRequest;
-import com.costumeshop.model.request.RegistrationRequest;
-import com.costumeshop.model.response.*;
+import com.costumeshop.core.sql.entity.UserRole;
+import com.costumeshop.model.dto.AddressDTO;
+import com.costumeshop.model.dto.UserDTO;
+import com.costumeshop.model.dto.UserLoginDTO;
+import com.costumeshop.model.dto.UserRegistrationDTO;
+import com.costumeshop.model.response.GetAddressesResponse;
+import com.costumeshop.model.response.SimpleResponse;
+import com.costumeshop.model.response.UserResponse;
 import com.costumeshop.service.DatabaseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -24,7 +27,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -40,10 +42,10 @@ public class UserController {
 
 
     @PostMapping(path = "/registration")
-    public @ResponseBody ResponseEntity<?> registerNewUser(@RequestBody RegistrationRequest request) {
+    public @ResponseBody ResponseEntity<?> registerNewUser(@RequestBody UserRegistrationDTO dto) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-        User existingUserByEmail = databaseService.findUserByEmail(request.getEmail());
+        User existingUserByEmail = databaseService.findUserByEmail(dto.getEmail());
         if (existingUserByEmail != null) {
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
@@ -51,7 +53,7 @@ public class UserController {
                     .build(), responseHeaders, HttpStatus.FORBIDDEN);
         }
 
-        User existingUserByUsername = databaseService.findUserByUsername(request.getEmail());
+        User existingUserByUsername = databaseService.findUserByUsername(dto.getEmail());
         if (existingUserByUsername != null) {
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
@@ -60,7 +62,7 @@ public class UserController {
         }
 
         try {
-            databaseService.insertNewRegisteredUser(request);
+            databaseService.insertNewRegisteredUser(dto);
         } catch (Exception e) {
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
@@ -75,11 +77,11 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public @ResponseBody ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public @ResponseBody ResponseEntity<?> login(@RequestBody UserLoginDTO dto) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-        User user = databaseService.findUserByUsernameOrEmail(request.getEmail());
+        User user = databaseService.findUserByUsernameOrEmail(dto.getEmail());
         if (user == null) {
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
@@ -98,7 +100,7 @@ public class UserController {
         Authentication authentication;
         try {
             authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+                    new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword()));
         } catch (AuthenticationException e) {
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
@@ -114,7 +116,7 @@ public class UserController {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        return new ResponseEntity<>(UserLoginResponse.builder()
+        UserDTO userDTO = UserDTO.builder()
                 .token(token)
                 .id(userDetails.getId())
                 .username(userDetails.getUsername())
@@ -123,6 +125,10 @@ public class UserController {
                 .phone(user.getPhone())
                 .email(userDetails.getEmail())
                 .roles(roles)
+                .build();
+
+        return new ResponseEntity<>(UserResponse.builder()
+                .user(userDTO)
                 .success(true)
                 .message("Login successful! Hello, " + userDetails.getUsername() + "!")
                 .build(), responseHeaders, HttpStatus.OK);
@@ -133,9 +139,21 @@ public class UserController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         User user = databaseService.findUserByVerificationToken(verificationToken);
+
+
         if (user != null) {
+            UserDTO userDTO = UserDTO.builder()
+                    .id(Long.valueOf(user.getId()))
+                    .password(user.getPassword())
+                    .token(user.getVerificationToken())
+                    .emailVerified(user.getEmailVerified())
+                    .email(user.getEmail())
+                    .name(user.getName())
+                    .phone(user.getPhone())
+                    .roles(user.getUserRoles().stream().map(UserRole::getRole).collect(Collectors.toList()))
+                    .build();
             return new ResponseEntity<>(UserResponse.builder()
-                    .user(user)
+                    .user(userDTO)
                     .success(true)
                     .message("User found!")
                     .build(), responseHeaders, HttpStatus.OK);
@@ -166,7 +184,7 @@ public class UserController {
     }
 
     @PostMapping("/add-address")
-    public @ResponseBody ResponseEntity<?> addAddress(@RequestBody AddAddressRequest request) {
+    public @ResponseBody ResponseEntity<?> addAddress(@RequestBody AddressDTO request) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
@@ -187,7 +205,7 @@ public class UserController {
     public @ResponseBody ResponseEntity<?> getAddressesForUser(@RequestParam Integer userId) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-        Set<Address> addresses;
+        List<AddressDTO> addresses;
         try {
             addresses = databaseService.getAddressesForUser(userId);
         } catch (Exception e) {
@@ -211,7 +229,7 @@ public class UserController {
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
             databaseService.deleteAddress(addressId);
-        } catch (DataIntegrityViolationException e ) {
+        } catch (DataIntegrityViolationException e) {
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
                     .message("Error occurred when removing address! The address is connected to an existing complaint!")

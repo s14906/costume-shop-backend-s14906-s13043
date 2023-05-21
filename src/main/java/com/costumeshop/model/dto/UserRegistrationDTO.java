@@ -1,19 +1,16 @@
-package com.costumeshop.model.request;
+package com.costumeshop.model.dto;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class RegistrationRequest {
+public class UserRegistrationDTO {
     private String email;
     private String password;
     private String username;
     private String name;
     private String surname;
-    private String street;
-    private String postalCode;
-    private String city;
-    private String flatNumber;
     private String phone;
+    private AddressDTO address;
 }

@@ -1,10 +1,10 @@
 package com.costumeshop.controller;
 
-import com.costumeshop.core.sql.entity.Item;
-import com.costumeshop.core.sql.entity.ItemCart;
 import com.costumeshop.core.sql.entity.ItemColor;
 import com.costumeshop.core.sql.entity.ItemSize;
-import com.costumeshop.model.request.AddToCartRequest;
+import com.costumeshop.model.dto.CartItemDTO;
+import com.costumeshop.model.dto.ItemWithImageDTO;
+import com.costumeshop.model.dto.AddToCartDTO;
 import com.costumeshop.model.response.CartResponse;
 import com.costumeshop.model.response.SimpleResponse;
 import com.costumeshop.service.DatabaseService;
@@ -29,8 +29,8 @@ public class ItemController {
     private final DatabaseService databaseService;
 
     @GetMapping(path = "/items")
-    public List<Item> getAllItems() {
-        return databaseService.findAllItems();
+    public List<ItemWithImageDTO> getAllItemsWithImages() {
+        return databaseService.findAllItemsWithImages();
     }
 
     @GetMapping(path = "/items/sizes")
@@ -44,7 +44,7 @@ public class ItemController {
     }
 
     @PostMapping(path = "/cart")
-    public @ResponseBody ResponseEntity<?> addToCart(@RequestBody AddToCartRequest request) {
+    public @ResponseBody ResponseEntity<?> addToCart(@RequestBody AddToCartDTO request) {
         try {
             databaseService.insertItemToCart(request);
             HttpHeaders responseHeaders = new HttpHeaders();
@@ -68,7 +68,7 @@ public class ItemController {
     @GetMapping(path = "/cart")
     public @ResponseBody ResponseEntity<?> getCartForUser(@RequestParam Integer userId) {
         try {
-            List<ItemCart> cartItems = databaseService.findCartItemsForUser(userId);
+            List<CartItemDTO> cartItemDTOs = databaseService.findCartItemsForUser(userId);
 
             HttpHeaders responseHeaders = new HttpHeaders();
             responseHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -76,7 +76,7 @@ public class ItemController {
             return new ResponseEntity<>(CartResponse.builder()
                     .success(true)
                     .message("Items retrieved successfully!")
-                    .cartItems(cartItems)
+                    .cartItems(cartItemDTOs)
                     .build(), responseHeaders, HttpStatus.OK);
         } catch (Exception e) {
             HttpHeaders responseHeaders = new HttpHeaders();

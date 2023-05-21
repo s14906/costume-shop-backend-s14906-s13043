@@ -1,11 +1,10 @@
 package com.costumeshop.service;
 
-import com.costumeshop.core.sql.dto.ComplaintDTO;
+import com.costumeshop.model.dto.*;
 import com.costumeshop.core.sql.entity.*;
 import com.costumeshop.core.sql.repository.*;
-import com.costumeshop.model.request.AddAddressRequest;
-import com.costumeshop.model.request.AddToCartRequest;
-import com.costumeshop.model.request.RegistrationRequest;
+import com.costumeshop.model.dto.AddressDTO;
+import com.costumeshop.model.dto.AddToCartDTO;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.IterableUtils;
 import org.slf4j.Logger;
@@ -14,7 +13,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -35,14 +37,14 @@ public class DatabaseService {
     private final MailService mailService;
     private final PasswordService passwordService;
 
-    public void insertNewRegisteredUser(RegistrationRequest request) {
+    public void insertNewRegisteredUser(UserRegistrationDTO userRegistrationDTO) {
         User newUser = new User();
-        newUser.setName(request.getName());
-        newUser.setEmail(request.getEmail());
-        newUser.setUsername(request.getUsername());
-        newUser.setSurname(request.getSurname());
-        newUser.setPassword(passwordEncoder.encode(request.getPassword()));
-        newUser.setPhone(request.getPhone());
+        newUser.setName(userRegistrationDTO.getName());
+        newUser.setEmail(userRegistrationDTO.getEmail());
+        newUser.setUsername(userRegistrationDTO.getUsername());
+        newUser.setSurname(userRegistrationDTO.getSurname());
+        newUser.setPassword(passwordEncoder.encode(userRegistrationDTO.getPassword()));
+        newUser.setPhone(userRegistrationDTO.getPhone());
         newUser.setEmailVerified(0);
         UserRole userRole = userRoleRepository.findById(1).orElseThrow();
         newUser.setUserRoles(Set.of(userRole));
@@ -60,10 +62,11 @@ public class DatabaseService {
         }
 
         Address address = new Address();
-        address.setCity(request.getCity());
-        address.setStreet(request.getStreet());
-        address.setPostalCode(request.getPostalCode());
-        address.setFlatNumber(request.getFlatNumber());
+        AddressDTO addressDTO = userRegistrationDTO.getAddress();
+        address.setCity(addressDTO.getCity());
+        address.setStreet(addressDTO.getStreet());
+        address.setPostalCode(addressDTO.getPostalCode());
+        address.setFlatNumber(addressDTO.getFlatNumber());
         address.setUser(newUser);
         addressRepository.save(address);
     }
@@ -104,8 +107,27 @@ public class DatabaseService {
         return itemRepository.findById(id).orElseThrow();
     }
 
-    public List<Item> findAllItems() {
-        return IterableUtils.toList(itemRepository.findAll());
+    public List<ItemWithImageDTO> findAllItemsWithImages() {
+        List<ItemWithImageDTO> itemWithImageDTOs = new ArrayList<>();
+        for (Item item : itemRepository.findAll()) {
+            List<ItemImageDTO> itemImageDTOs = new ArrayList<>();
+            for (ItemImage itemImage : item.getItemImages()) {
+                ItemImageDTO itemImageDTO = ItemImageDTO.builder()
+                        .imageId(itemImage.getId())
+                        .imageBase64(itemImage.getImageBase64())
+                        .build();
+                itemImageDTOs.add(itemImageDTO);
+            }
+            ItemWithImageDTO itemWithImageDTO = ItemWithImageDTO.builder()
+                    .itemId(item.getId())
+                    .itemImages(itemImageDTOs)
+                    .description(item.getDescription())
+                    .price(item.getPrice())
+                    .title(item.getTitle())
+                    .build();
+            itemWithImageDTOs.add(itemWithImageDTO);
+        }
+        return itemWithImageDTOs;
     }
 
     public List<ComplaintDTO> findAllComplaints() {
@@ -139,7 +161,7 @@ public class DatabaseService {
         return IterableUtils.toList(itemColorRepository.findAll());
     }
 
-    public void insertItemToCart(AddToCartRequest request) {
+    public void insertItemToCart(AddToCartDTO request) {
         User user = findUserById(request.getUserId());
         Item item = findItemById(request.getItemId());
         ItemSize itemSize = findItemSizeById(request.getItemSizeId());
@@ -163,26 +185,48 @@ public class DatabaseService {
         }
     }
 
-    public List<ItemCart> findCartItemsForUser(Integer userId) {
-        return IterableUtils.toList(itemCartRepository.findAllByUserId(userId));
+    public List<CartItemDTO> findCartItemsForUser(Integer userId) {
+        List<CartItemDTO> cartItemDTOs = new ArrayList<>();
+        for (ItemCart itemCart: itemCartRepository.findAllByUserId(userId)) {
+            CartItemDTO cartItemDTO = CartItemDTO.builder()
+                    .itemsAmount(itemCart.getItemAmount())
+                    .size(itemCart.getItemSize().getSize())
+                    .price(itemCart.getItem().getPrice())
+                    .title(itemCart.getItem().getTitle())
+                    .build();
+            cartItemDTOs.add(cartItemDTO);
+        }
+        return cartItemDTOs;
     }
 
-    public void insertNewAddressForUser(AddAddressRequest request) {
+    public void insertNewAddressForUser(AddressDTO dto) {
         //TODO: exception catching
-        User user = userRepository.findById(request.getUserId()).orElseThrow();
+        User user = userRepository.findById(dto.getUserId()).orElseThrow();
 
         Address address = new Address();
         address.setUser(user);
-        address.setCity(request.getCity());
-        address.setStreet(request.getStreet());
-        address.setFlatNumber(request.getFlatNumber());
-        address.setPostalCode(request.getPostalCode());
+        address.setCity(dto.getCity());
+        address.setStreet(dto.getStreet());
+        address.setFlatNumber(dto.getFlatNumber());
+        address.setPostalCode(dto.getPostalCode());
         addressRepository.save(address);
     }
 
-    public Set<Address> getAddressesForUser(Integer userId) {
+    public List<AddressDTO> getAddressesForUser(Integer userId) {
         User user = userRepository.findById(userId).orElseThrow();
-        return user.getAddresses();
+        List<AddressDTO> addressDTOs = new ArrayList<>();
+        for (Address address: user.getAddresses()) {
+            AddressDTO addressDTO = AddressDTO.builder()
+                    .addressId(address.getId())
+                    .userId(userId)
+                    .city(address.getCity())
+                    .flatNumber(address.getFlatNumber())
+                    .postalCode(address.getPostalCode())
+                    .street(address.getStreet())
+                    .build();
+            addressDTOs.add(addressDTO);
+        }
+        return addressDTOs;
     }
 
     public void deleteAddress(Integer addressId) {

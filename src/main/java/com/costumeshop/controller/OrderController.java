@@ -1,6 +1,6 @@
 package com.costumeshop.controller;
 
-import com.costumeshop.core.sql.dto.ComplaintDTO;
+import com.costumeshop.model.dto.ComplaintDTO;
 import com.costumeshop.model.response.SimpleResponse;
 import com.costumeshop.service.DatabaseService;
 import lombok.RequiredArgsConstructor;

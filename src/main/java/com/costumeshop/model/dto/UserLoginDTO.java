@@ -1,11 +1,11 @@
-package com.costumeshop.model.request;
+package com.costumeshop.model.dto;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class LoginRequest {
+public class UserLoginDTO {
     private String email;
     private String password;
 }

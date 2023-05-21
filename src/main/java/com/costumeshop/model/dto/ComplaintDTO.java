@@ -1,4 +1,4 @@
-package com.costumeshop.core.sql.dto;
+package com.costumeshop.model.dto;
 
 import lombok.Builder;
 import lombok.Getter;
