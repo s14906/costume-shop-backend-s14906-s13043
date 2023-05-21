@@ -10,6 +10,7 @@ import com.costumeshop.model.request.RegistrationRequest;
 import com.costumeshop.model.response.*;
 import com.costumeshop.service.DatabaseService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -210,6 +211,11 @@ public class UserController {
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
             databaseService.deleteAddress(addressId);
+        } catch (DataIntegrityViolationException e ) {
+            return new ResponseEntity<>(SimpleResponse.builder()
+                    .success(false)
+                    .message("Error occurred when removing address! The address is connected to an existing complaint!")
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)

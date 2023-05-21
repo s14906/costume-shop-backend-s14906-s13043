@@ -1,5 +1,6 @@
 package com.costumeshop.service;
 
+import com.costumeshop.core.sql.dto.ComplaintDTO;
 import com.costumeshop.core.sql.entity.*;
 import com.costumeshop.core.sql.repository.*;
 import com.costumeshop.model.request.AddAddressRequest;
@@ -13,14 +14,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class DatabaseService {
     //TODO: proper exception throwing/catching
+    //TODO: rework the entity passing (create DTOs) to avoid lazy object loading
     private static final Logger logger = LoggerFactory.getLogger(DatabaseService.class);
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
@@ -30,10 +31,10 @@ public class DatabaseService {
     private final ItemSizeRepository itemSizeRepository;
     private final ItemCartRepository itemCartRepository;
     private final ItemColorRepository itemColorRepository;
+    private final ComplaintRepository complaintRepository;
     private final MailService mailService;
     private final PasswordService passwordService;
 
-    @Transactional
     public void insertNewRegisteredUser(RegistrationRequest request) {
         User newUser = new User();
         newUser.setName(request.getName());
@@ -105,6 +106,25 @@ public class DatabaseService {
 
     public List<Item> findAllItems() {
         return IterableUtils.toList(itemRepository.findAll());
+    }
+
+    public List<ComplaintDTO> findAllComplaints() {
+        List<ComplaintDTO> complaintDTOs = new ArrayList<>();
+        for (Complaint complaint : complaintRepository.findAll()) {
+            User employee = complaint.getUser();
+            ComplaintDTO complaintDTO = ComplaintDTO.builder()
+                    .complaintId(complaint.getId())
+                    .buyerId(complaint.getOrder().getId())
+                    .employeeId(employee != null ? employee.getId() : null)
+                    .buyerName(complaint.getOrder().getUser().getName())
+                    .buyerSurname(complaint.getOrder().getUser().getSurname())
+                    .complaintStatus(complaint.getComplaintStatus().getStatus())
+                    .employeeName(employee != null ? employee.getName() : null)
+                    .employeeSurname(employee != null ? employee.getSurname() : null)
+                    .build();
+            complaintDTOs.add(complaintDTO);
+        }
+        return complaintDTOs;
     }
 
     public ItemSize findItemSizeById(Integer id) {
@@ -180,5 +200,13 @@ public class DatabaseService {
         } else {
             throw new RuntimeException("Error occurred while changing password");
         }
+    }
+
+    public void assignEmployeeToComplaint(Integer userId, Integer complaintId) {
+        User user = userRepository.findById(userId).orElseThrow();
+        Complaint complaint = complaintRepository.findById(complaintId).orElseThrow();
+        complaint.setUser(user);
+        complaintRepository.save(complaint);
+
     }
 }
