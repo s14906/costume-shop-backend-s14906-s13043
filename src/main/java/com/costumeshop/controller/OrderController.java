@@ -27,6 +27,11 @@ public class OrderController {
         return databaseService.findAllComplaints();
     }
 
+    @GetMapping(path = "/complaints/{complaintId}")
+    public ComplaintDTO getComplaint(@PathVariable("complaintId") Integer complaintId) {
+        return databaseService.findComplaint(complaintId);
+    }
+
     @PostMapping(path = "/complaints")
     public @ResponseBody ResponseEntity<?> assignEmployeeToComplaint(@RequestParam Integer userId,
                                                                      @RequestParam Integer complaintId) {

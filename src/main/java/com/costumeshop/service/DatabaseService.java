@@ -253,4 +253,19 @@ public class DatabaseService {
         complaintRepository.save(complaint);
 
     }
+
+    public ComplaintDTO findComplaint(Integer complaintId) {
+        Complaint complaint = this.complaintRepository.findById(complaintId).orElseThrow();
+        User employee = complaint.getUser();
+        return ComplaintDTO.builder()
+                .complaintId(complaint.getId())
+                .buyerId(complaint.getOrder().getId())
+                .employeeId(employee != null ? employee.getId() : null)
+                .buyerName(complaint.getOrder().getUser().getName())
+                .buyerSurname(complaint.getOrder().getUser().getSurname())
+                .complaintStatus(complaint.getComplaintStatus().getStatus())
+                .employeeName(employee != null ? employee.getName() : null)
+                .employeeSurname(employee != null ? employee.getSurname() : null)
+                .build();
+    }
 }
