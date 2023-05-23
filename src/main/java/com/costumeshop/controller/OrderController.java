@@ -1,5 +1,6 @@
 package com.costumeshop.controller;
 
+import com.costumeshop.model.dto.ComplaintChatMessageDTO;
 import com.costumeshop.model.dto.ComplaintDTO;
 import com.costumeshop.model.response.SimpleResponse;
 import com.costumeshop.service.DatabaseService;
@@ -30,6 +31,31 @@ public class OrderController {
     @GetMapping(path = "/complaints/{complaintId}")
     public ComplaintDTO getComplaint(@PathVariable("complaintId") Integer complaintId) {
         return databaseService.findComplaint(complaintId);
+    }
+
+    @GetMapping(path = "/complaints/{complaintId}/messages")
+    public List<ComplaintChatMessageDTO> getComplaintChatMessages(@PathVariable("complaintId") Integer complaintId) {
+        return databaseService.findComplaintChatMessages(complaintId);
+    }
+
+    @PostMapping(path = "/complaints/{complaintId}/messages")
+    public @ResponseBody ResponseEntity<?> saveComplaintChatMessage(
+            @RequestBody ComplaintChatMessageDTO complaintChatMessageDTO) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+        try {
+            databaseService.saveComplaintChatMessage(complaintChatMessageDTO);
+        } catch (Exception e) {
+            return new ResponseEntity<>(SimpleResponse.builder()
+                    .success(false)
+                    .message("Error occurred when saving the message!")
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(SimpleResponse.builder()
+                .success(true)
+                .message("Message sent!")
+                .build(), responseHeaders, HttpStatus.OK);
     }
 
     @PostMapping(path = "/complaints")

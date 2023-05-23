@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -38,5 +39,10 @@ public class Complaint {
     @JoinColumn(name = "user_id")
     @JsonManagedReference
     private User user;
+
+    @JsonManagedReference
+    @OneToMany
+    @JoinColumn(name = "id")
+    private Set<ComplaintChatMessage> complaintChatMessages;
 
 }

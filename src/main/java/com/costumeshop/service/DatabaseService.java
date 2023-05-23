@@ -13,10 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +31,7 @@ public class DatabaseService {
     private final ItemCartRepository itemCartRepository;
     private final ItemColorRepository itemColorRepository;
     private final ComplaintRepository complaintRepository;
+    private final ComplaintChatMessageRepository complaintChatMessageRepository;
     private final MailService mailService;
     private final PasswordService passwordService;
 
@@ -133,17 +131,7 @@ public class DatabaseService {
     public List<ComplaintDTO> findAllComplaints() {
         List<ComplaintDTO> complaintDTOs = new ArrayList<>();
         for (Complaint complaint : complaintRepository.findAll()) {
-            User employee = complaint.getUser();
-            ComplaintDTO complaintDTO = ComplaintDTO.builder()
-                    .complaintId(complaint.getId())
-                    .buyerId(complaint.getOrder().getId())
-                    .employeeId(employee != null ? employee.getId() : null)
-                    .buyerName(complaint.getOrder().getUser().getName())
-                    .buyerSurname(complaint.getOrder().getUser().getSurname())
-                    .complaintStatus(complaint.getComplaintStatus().getStatus())
-                    .employeeName(employee != null ? employee.getName() : null)
-                    .employeeSurname(employee != null ? employee.getSurname() : null)
-                    .build();
+            ComplaintDTO complaintDTO = getComplaintDTO(complaint);
             complaintDTOs.add(complaintDTO);
         }
         return complaintDTOs;
@@ -187,7 +175,7 @@ public class DatabaseService {
 
     public List<CartItemDTO> findCartItemsForUser(Integer userId) {
         List<CartItemDTO> cartItemDTOs = new ArrayList<>();
-        for (ItemCart itemCart: itemCartRepository.findAllByUserId(userId)) {
+        for (ItemCart itemCart : itemCartRepository.findAllByUserId(userId)) {
             CartItemDTO cartItemDTO = CartItemDTO.builder()
                     .itemsAmount(itemCart.getItemAmount())
                     .size(itemCart.getItemSize().getSize())
@@ -215,7 +203,7 @@ public class DatabaseService {
     public List<AddressDTO> getAddressesForUser(Integer userId) {
         User user = userRepository.findById(userId).orElseThrow();
         List<AddressDTO> addressDTOs = new ArrayList<>();
-        for (Address address: user.getAddresses()) {
+        for (Address address : user.getAddresses()) {
             AddressDTO addressDTO = AddressDTO.builder()
                     .addressId(address.getId())
                     .userId(userId)
@@ -256,6 +244,41 @@ public class DatabaseService {
 
     public ComplaintDTO findComplaint(Integer complaintId) {
         Complaint complaint = this.complaintRepository.findById(complaintId).orElseThrow();
+        return getComplaintDTO(complaint);
+    }
+
+    public List<ComplaintChatMessageDTO> findComplaintChatMessages(Integer complaintId) {
+        Complaint complaint = this.complaintRepository.findById(complaintId).orElseThrow();
+        Set<ComplaintChatMessage> complaintChatMessages = complaint.getComplaintChatMessages();
+        List<ComplaintChatMessageDTO> complaintChatMessageDTOS = new ArrayList<>();
+        for (ComplaintChatMessage complaintChatMessage : complaintChatMessages) {
+            ComplaintChatMessageDTO complaintChatMessageDTO = ComplaintChatMessageDTO.builder()
+                    .complaintId(complaintId)
+                    .chatMessageId(complaintChatMessage.getId())
+                    .chatMessage(complaintChatMessage.getChatMessage())
+                    .createdDate(complaintChatMessage.getCreatedDate())
+                    .chatMessageUserName(complaintChatMessage.getChatMessageUserName())
+                    .chatMessageUserSurname(complaintChatMessage.getChatMessageUserSurname())
+                    .build();
+
+            complaintChatMessageDTOS.add(complaintChatMessageDTO);
+        }
+        return complaintChatMessageDTOS;
+    }
+
+
+    public void saveComplaintChatMessage(ComplaintChatMessageDTO complaintChatMessageDTO) {
+        Complaint complaint = complaintRepository.findById(complaintChatMessageDTO.getComplaintId()).orElseThrow();
+        ComplaintChatMessage complaintChatMessage = new ComplaintChatMessage();
+        complaintChatMessage.setComplaint(complaint);
+        complaintChatMessage.setChatMessage(complaintChatMessage.getChatMessage());
+        complaintChatMessage.setChatMessageUserName(complaintChatMessage.getChatMessageUserName());
+        complaintChatMessage.setChatMessageUserSurname(complaintChatMessage.getChatMessageUserSurname());
+        complaintChatMessage.setCreatedDate(new Date());
+        complaintChatMessageRepository.save(complaintChatMessage);
+    }
+
+    private ComplaintDTO getComplaintDTO(Complaint complaint) {
         User employee = complaint.getUser();
         return ComplaintDTO.builder()
                 .complaintId(complaint.getId())
