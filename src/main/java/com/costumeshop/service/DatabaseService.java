@@ -34,6 +34,7 @@ public class DatabaseService {
     private final ComplaintRepository complaintRepository;
     private final ComplaintChatMessageRepository complaintChatMessageRepository;
     private final ComplaintChatImageRepository complaintChatImageRepository;
+    private final OrderRepository orderRepository;
     private final MailService mailService;
     private final PasswordService passwordService;
 
@@ -306,5 +307,21 @@ public class DatabaseService {
                 .employeeName(employee != null ? employee.getName() : null)
                 .employeeSurname(employee != null ? employee.getSurname() : null)
                 .build();
+    }
+
+    public List<OrderHistoryDTO> findAllOrdersForUser(Integer userId) {
+        User user = userRepository.findById(userId).orElseThrow();
+        List<OrderHistoryDTO> orderHistoryDTOs = new ArrayList<>();
+        for (Order order: user.getOrders()) {
+            OrderHistoryDTO orderHistoryDTO = OrderHistoryDTO.builder()
+                    .orderId(order.getId())
+                    .orderUserName(order.getUser().getName())
+                    .orderUserSurname(order.getUser().getSurname())
+                    .orderStatus(order.getOrderStatus().getStatus())
+                    .createdDate(order.getCreatedDate())
+                    .build();
+            orderHistoryDTOs.add(orderHistoryDTO);
+        }
+        return orderHistoryDTOs;
     }
 }

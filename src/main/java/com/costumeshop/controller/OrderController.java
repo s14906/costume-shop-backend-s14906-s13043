@@ -2,6 +2,7 @@ package com.costumeshop.controller;
 
 import com.costumeshop.model.dto.ComplaintChatMessageDTO;
 import com.costumeshop.model.dto.ComplaintDTO;
+import com.costumeshop.model.dto.OrderHistoryDTO;
 import com.costumeshop.model.response.SimpleResponse;
 import com.costumeshop.service.DatabaseService;
 import lombok.RequiredArgsConstructor;
@@ -76,5 +77,10 @@ public class OrderController {
                 .success(true)
                 .message("Complaint assigned successfully!")
                 .build(), responseHeaders, HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/users/{userId}/orders")
+    public List<OrderHistoryDTO> getOrdersForUser(@PathVariable("userId") Integer userId) {
+        return databaseService.findAllOrdersForUser(userId);
     }
 }

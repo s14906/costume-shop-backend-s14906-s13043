@@ -22,4 +22,6 @@ public class OrderStatus {
     @JsonManagedReference
     @OneToMany(mappedBy = "id", cascade = CascadeType.MERGE, fetch = FetchType.LAZY)
     private Set<Order> orders;
+
+    private String status;
 }
