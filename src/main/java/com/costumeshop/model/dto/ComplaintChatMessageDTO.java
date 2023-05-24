@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -16,5 +17,6 @@ public class ComplaintChatMessageDTO {
     private String chatMessageUserSurname;
     private String chatMessage;
     private Date createdDate;
+    private Set<String> chatImagesBase64;
 
 }

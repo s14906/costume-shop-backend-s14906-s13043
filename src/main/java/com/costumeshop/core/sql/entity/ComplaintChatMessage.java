@@ -1,12 +1,14 @@
 package com.costumeshop.core.sql.entity;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Date;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -26,4 +28,9 @@ public class ComplaintChatMessage {
     @ManyToOne
     @JoinColumn(name = "complaint_id")
     private Complaint complaint;
+
+    @JsonManagedReference
+    @OneToMany
+    @JoinColumn(name = "complaint_chat_message_id")
+    private Set<ComplaintChatImage> complaintChatImages;
 }

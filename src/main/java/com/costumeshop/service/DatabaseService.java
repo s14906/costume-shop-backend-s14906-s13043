@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +33,7 @@ public class DatabaseService {
     private final ItemColorRepository itemColorRepository;
     private final ComplaintRepository complaintRepository;
     private final ComplaintChatMessageRepository complaintChatMessageRepository;
+    private final ComplaintChatImageRepository complaintChatImageRepository;
     private final MailService mailService;
     private final PasswordService passwordService;
 
@@ -250,8 +252,14 @@ public class DatabaseService {
     public List<ComplaintChatMessageDTO> findComplaintChatMessages(Integer complaintId) {
         Complaint complaint = this.complaintRepository.findById(complaintId).orElseThrow();
         Set<ComplaintChatMessage> complaintChatMessages = complaint.getComplaintChatMessages();
-        List<ComplaintChatMessageDTO> complaintChatMessageDTOS = new ArrayList<>();
+        List<ComplaintChatMessageDTO> complaintChatMessageDTOs = new ArrayList<>();
         for (ComplaintChatMessage complaintChatMessage : complaintChatMessages) {
+
+            Set<String> complaintChatImagesBase64 =
+                    complaintChatMessage.getComplaintChatImages().stream()
+                    .map(ComplaintChatImage::getChatImageBase64)
+                    .collect(Collectors.toSet());
+
             ComplaintChatMessageDTO complaintChatMessageDTO = ComplaintChatMessageDTO.builder()
                     .complaintId(complaintId)
                     .chatMessageId(complaintChatMessage.getId())
@@ -259,11 +267,12 @@ public class DatabaseService {
                     .createdDate(complaintChatMessage.getCreatedDate())
                     .chatMessageUserName(complaintChatMessage.getChatMessageUserName())
                     .chatMessageUserSurname(complaintChatMessage.getChatMessageUserSurname())
+                    .chatImagesBase64(complaintChatImagesBase64)
                     .build();
 
-            complaintChatMessageDTOS.add(complaintChatMessageDTO);
+            complaintChatMessageDTOs.add(complaintChatMessageDTO);
         }
-        return complaintChatMessageDTOS;
+        return complaintChatMessageDTOs;
     }
 
 
@@ -271,11 +280,18 @@ public class DatabaseService {
         Complaint complaint = complaintRepository.findById(complaintChatMessageDTO.getComplaintId()).orElseThrow();
         ComplaintChatMessage complaintChatMessage = new ComplaintChatMessage();
         complaintChatMessage.setComplaint(complaint);
-        complaintChatMessage.setChatMessage(complaintChatMessage.getChatMessage());
-        complaintChatMessage.setChatMessageUserName(complaintChatMessage.getChatMessageUserName());
-        complaintChatMessage.setChatMessageUserSurname(complaintChatMessage.getChatMessageUserSurname());
-        complaintChatMessage.setCreatedDate(new Date());
+        complaintChatMessage.setChatMessage(complaintChatMessageDTO.getChatMessage());
+        complaintChatMessage.setChatMessageUserName(complaintChatMessageDTO.getChatMessageUserName());
+        complaintChatMessage.setChatMessageUserSurname(complaintChatMessageDTO.getChatMessageUserSurname());
+        complaintChatMessage.setCreatedDate(complaintChatMessageDTO.getCreatedDate());
         complaintChatMessageRepository.save(complaintChatMessage);
+
+        for (String chatImageBase64: complaintChatMessageDTO.getChatImagesBase64()) {
+            ComplaintChatImage complaintChatImage = new ComplaintChatImage();
+            complaintChatImage.setComplaintChatMessage(complaintChatMessage);
+            complaintChatImage.setChatImageBase64(chatImageBase64);
+            complaintChatImageRepository.save(complaintChatImage);
+        }
     }
 
     private ComplaintDTO getComplaintDTO(Complaint complaint) {

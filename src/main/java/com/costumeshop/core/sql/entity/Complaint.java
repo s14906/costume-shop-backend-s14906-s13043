@@ -42,7 +42,7 @@ public class Complaint {
 
     @JsonManagedReference
     @OneToMany
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "complaint_id")
     private Set<ComplaintChatMessage> complaintChatMessages;
 
 }
