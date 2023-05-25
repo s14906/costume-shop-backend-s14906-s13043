@@ -2,6 +2,7 @@ package com.costumeshop.controller;
 
 import com.costumeshop.model.dto.ComplaintChatMessageDTO;
 import com.costumeshop.model.dto.ComplaintDTO;
+import com.costumeshop.model.dto.OrderDetailsDTO;
 import com.costumeshop.model.dto.OrderHistoryDTO;
 import com.costumeshop.model.response.SimpleResponse;
 import com.costumeshop.service.DatabaseService;
@@ -82,5 +83,10 @@ public class OrderController {
     @GetMapping(path = "/users/{userId}/orders")
     public List<OrderHistoryDTO> getOrdersForUser(@PathVariable("userId") Integer userId) {
         return databaseService.findAllOrdersForUser(userId);
+    }
+
+    @GetMapping(path = "/orders/{orderId}")
+    public OrderDetailsDTO getOrderDetails(@PathVariable("orderId") Integer orderId) {
+        return databaseService.findOrderDetailsByOrderId(orderId);
     }
 }

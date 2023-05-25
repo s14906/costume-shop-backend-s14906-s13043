@@ -1,12 +1,11 @@
 package com.costumeshop.core.sql.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -31,12 +30,17 @@ public class Item {
 
     @JsonManagedReference
     @OneToMany
-    @JoinColumn(name = "id")
-    private List<ItemImage> itemImages;
+    @JoinColumn(name = "item_id")
+    private Set<ItemImage> itemImages;
 
-    @JsonBackReference
+    @JsonManagedReference
     @OneToMany
-    @JoinColumn(name = "id")
-    private List<ItemCart> itemCarts;
+    @JoinColumn(name = "item_id")
+    private Set<ItemCart> itemCarts;
+
+    @JsonManagedReference
+    @OneToMany
+    @JoinColumn(name = "item_id")
+    private Set<OrderDetails> ordersDetails;
 
 }

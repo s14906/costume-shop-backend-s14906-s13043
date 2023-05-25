@@ -324,4 +324,28 @@ public class DatabaseService {
         }
         return orderHistoryDTOs;
     }
+
+    public OrderDetailsDTO findOrderDetailsByOrderId(Integer orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow();
+        Set<OrderDetails> ordersDetails = order.getOrdersDetails();
+        Set<ItemWithImageDTO> itemWithImageDTOs = new HashSet<>();
+
+        for (OrderDetails orderDetails: ordersDetails) {
+            Item item = orderDetails.getItem();
+            ItemWithImageDTO itemWithImageDTO = ItemWithImageDTO.builder()
+                    .itemId(item.getId())
+                    .description(item.getDescription())
+                    .title(item.getTitle())
+                    .price(item.getPrice())
+                    .build();
+
+            itemWithImageDTOs.add(itemWithImageDTO);
+        }
+
+        return OrderDetailsDTO.builder()
+                .orderId(order.getId())
+                .items(itemWithImageDTOs)
+                .build();
+    }
+
 }

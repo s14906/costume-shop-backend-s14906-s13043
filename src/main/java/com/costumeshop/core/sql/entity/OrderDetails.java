@@ -2,48 +2,33 @@ package com.costumeshop.core.sql.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Date;
-import java.util.Set;
-
 @Getter
 @Setter
 @Entity
-@Table(name = "`order`")
+@Table(name = "`order_details`")
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
-public class Order {
+public class OrderDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @JsonBackReference
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "item_size_id")
+    private ItemSize itemSize;
 
     @JsonBackReference
     @ManyToOne
-    @JoinColumn(name = "order_status_id")
-    private OrderStatus orderStatus;
+    @JoinColumn(name = "item_id")
+    private Item item;
 
-    private Date createdDate;
-
-    private Date lastModifiedDate;
-
-    @ManyToOne
-    @JoinColumn(name = "address_id")
-    private Address address;
-
-    @OneToMany(mappedBy = "order")
     @JsonBackReference
-    private Set<Complaint> complaints;
-
-    @JsonManagedReference
-    @OneToMany
+    @ManyToOne
     @JoinColumn(name = "order_id")
-    private Set<OrderDetails> ordersDetails;
+    private Order order;
 }
