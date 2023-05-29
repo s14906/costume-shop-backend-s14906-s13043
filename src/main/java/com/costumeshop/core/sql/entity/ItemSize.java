@@ -19,11 +19,6 @@ public class ItemSize {
 
     @JsonManagedReference
     @OneToMany
-    @JoinColumn(name = "id")
-    private Set<ItemCart> itemCarts;
-
-    @JsonManagedReference
-    @OneToMany
     @JoinColumn(name = "item_size_id")
     private Set<OrderDetails> ordersDetails;
 }
