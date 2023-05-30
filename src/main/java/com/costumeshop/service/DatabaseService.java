@@ -344,6 +344,7 @@ public class DatabaseService {
 
         return OrderDetailsDTO.builder()
                 .orderId(order.getId())
+                .orderDate(order.getCreatedDate())
                 .items(itemWithImageDTOs)
                 .build();
     }
