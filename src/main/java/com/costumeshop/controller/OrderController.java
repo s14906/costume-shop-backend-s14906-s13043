@@ -1,9 +1,6 @@
 package com.costumeshop.controller;
 
-import com.costumeshop.model.dto.ComplaintChatMessageDTO;
-import com.costumeshop.model.dto.ComplaintDTO;
-import com.costumeshop.model.dto.OrderDetailsDTO;
-import com.costumeshop.model.dto.OrderHistoryDTO;
+import com.costumeshop.model.dto.*;
 import com.costumeshop.model.response.SimpleResponse;
 import com.costumeshop.service.DatabaseService;
 import lombok.RequiredArgsConstructor;
@@ -88,5 +85,25 @@ public class OrderController {
     @GetMapping(path = "/orders/{orderId}")
     public OrderDetailsDTO getOrderDetails(@PathVariable("orderId") Integer orderId) {
         return databaseService.findOrderDetailsByOrderId(orderId);
+    }
+
+    @PostMapping(path = "/complaints/create")
+    public @ResponseBody ResponseEntity<?> createNewComplaint(
+            @RequestBody CreateNewComplaintDTO createNewComplaintDTO) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            databaseService.saveNewComplaint(createNewComplaintDTO);
+        } catch (Exception e) {
+            return new ResponseEntity<>(SimpleResponse.builder()
+                    .success(false)
+                    .message("Error occurred when creating a new complaint!")
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+        return new ResponseEntity<>(SimpleResponse.builder()
+                .success(true)
+                .message("New complaint created successfully!")
+                .build(), responseHeaders, HttpStatus.OK);
     }
 }

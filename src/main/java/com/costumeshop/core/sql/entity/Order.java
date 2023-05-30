@@ -38,9 +38,10 @@ public class Order {
     @JoinColumn(name = "address_id")
     private Address address;
 
-    @OneToMany(mappedBy = "order")
+    @OneToOne
+    @JoinColumn(name = "id")
     @JsonBackReference
-    private Set<Complaint> complaints;
+    private Complaint complaint;
 
     @JsonManagedReference
     @OneToMany

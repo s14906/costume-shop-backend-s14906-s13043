@@ -34,6 +34,8 @@ public class DatabaseService {
     private final ComplaintRepository complaintRepository;
     private final ComplaintChatMessageRepository complaintChatMessageRepository;
     private final ComplaintChatImageRepository complaintChatImageRepository;
+    private final ComplaintStatusRepository complaintStatusRepository;
+    private final ComplaintCategoryRepository complaintCategoryRepository;
     private final OrderRepository orderRepository;
     private final MailService mailService;
     private final PasswordService passwordService;
@@ -258,8 +260,8 @@ public class DatabaseService {
 
             Set<String> complaintChatImagesBase64 =
                     complaintChatMessage.getComplaintChatImages().stream()
-                    .map(ComplaintChatImage::getChatImageBase64)
-                    .collect(Collectors.toSet());
+                            .map(ComplaintChatImage::getChatImageBase64)
+                            .collect(Collectors.toSet());
 
             ComplaintChatMessageDTO complaintChatMessageDTO = ComplaintChatMessageDTO.builder()
                     .complaintId(complaintId)
@@ -284,10 +286,10 @@ public class DatabaseService {
         complaintChatMessage.setChatMessage(complaintChatMessageDTO.getChatMessage());
         complaintChatMessage.setChatMessageUserName(complaintChatMessageDTO.getChatMessageUserName());
         complaintChatMessage.setChatMessageUserSurname(complaintChatMessageDTO.getChatMessageUserSurname());
-        complaintChatMessage.setCreatedDate(complaintChatMessageDTO.getCreatedDate());
+        complaintChatMessage.setCreatedDate(new Date());
         complaintChatMessageRepository.save(complaintChatMessage);
 
-        for (String chatImageBase64: complaintChatMessageDTO.getChatImagesBase64()) {
+        for (String chatImageBase64 : complaintChatMessageDTO.getChatImagesBase64()) {
             ComplaintChatImage complaintChatImage = new ComplaintChatImage();
             complaintChatImage.setComplaintChatMessage(complaintChatMessage);
             complaintChatImage.setChatImageBase64(chatImageBase64);
@@ -312,7 +314,7 @@ public class DatabaseService {
     public List<OrderHistoryDTO> findAllOrdersForUser(Integer userId) {
         User user = userRepository.findById(userId).orElseThrow();
         List<OrderHistoryDTO> orderHistoryDTOs = new ArrayList<>();
-        for (Order order: user.getOrders()) {
+        for (Order order : user.getOrders()) {
             OrderHistoryDTO orderHistoryDTO = OrderHistoryDTO.builder()
                     .orderId(order.getId())
                     .orderUserName(order.getUser().getName())
@@ -327,10 +329,11 @@ public class DatabaseService {
 
     public OrderDetailsDTO findOrderDetailsByOrderId(Integer orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow();
+        Complaint complaint = order.getComplaint();
         Set<OrderDetails> ordersDetails = order.getOrdersDetails();
         Set<ItemWithImageDTO> itemWithImageDTOs = new HashSet<>();
 
-        for (OrderDetails orderDetails: ordersDetails) {
+        for (OrderDetails orderDetails : ordersDetails) {
             Item item = orderDetails.getItem();
             ItemWithImageDTO itemWithImageDTO = ItemWithImageDTO.builder()
                     .itemId(item.getId())
@@ -342,10 +345,46 @@ public class DatabaseService {
             itemWithImageDTOs.add(itemWithImageDTO);
         }
 
-        return OrderDetailsDTO.builder()
-                .orderId(order.getId())
-                .items(itemWithImageDTOs)
-                .build();
+        if (complaint != null) {
+            ComplaintDTO complaintDTO = ComplaintDTO.builder()
+                    .complaintId(complaint.getId())
+                    .build();
+            return OrderDetailsDTO.builder()
+                    .orderId(order.getId())
+                    .complaint(complaintDTO)
+                    .items(itemWithImageDTOs)
+                    .build();
+        } else {
+            return OrderDetailsDTO.builder()
+                    .orderId(order.getId())
+                    .items(itemWithImageDTOs)
+                    .build();
+        }
     }
 
+    public void saveNewComplaint(CreateNewComplaintDTO createNewComplaintDTO) {
+        Order order = orderRepository.findById(createNewComplaintDTO.getOrderId()).orElseThrow();
+        User user = userRepository.findById(createNewComplaintDTO.getUserId()).orElseThrow();
+        ComplaintStatus complaintStatus = complaintStatusRepository.findComplaintStatusByStatus("OPEN");
+        ComplaintCategory complaintCategory = complaintCategoryRepository
+                .findComplaintCategoryByCategory(createNewComplaintDTO.getComplaintCategory());
+        ComplaintChatMessage complaintChatMessage = new ComplaintChatMessage();
+
+        complaintChatMessage.setChatMessageUserName(user.getName());
+        complaintChatMessage.setCreatedDate(new Date());
+        complaintChatMessage.setChatMessage(createNewComplaintDTO.getComplaintMessage());
+        complaintChatMessage.setChatMessageUserSurname(user.getSurname());
+
+        Complaint complaint = new Complaint();
+        complaint.setUser(user);
+        complaint.setComplaintStatus(complaintStatus);
+        complaint.setComplaintCategory(complaintCategory);
+        complaint.setCreatedDate(new Date());
+        complaint.setOrder(order);
+        complaint.setComplaintChatMessages(Set.of(complaintChatMessage));
+        complaintChatMessage.setComplaint(complaint);
+
+        complaintRepository.save(complaint);
+
+    }
 }

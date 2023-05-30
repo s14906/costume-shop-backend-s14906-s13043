@@ -4,14 +4,14 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Set;
-
 @Getter
 @Setter
 @Builder
-public class OrderDetailsDTO {
+public class CreateNewComplaintDTO {
+    private Integer userId;
     private Integer orderId;
-    private ComplaintDTO complaint;
-    private Set<ItemWithImageDTO> items;
+    private String complaintCategory;
+    private String complaintMessage;
+
 
 }
