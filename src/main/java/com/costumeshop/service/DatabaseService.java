@@ -364,7 +364,7 @@ public class DatabaseService {
         }
     }
 
-    public void saveNewComplaint(CreateNewComplaintDTO createNewComplaintDTO) {
+    public Integer saveNewComplaint(CreateNewComplaintDTO createNewComplaintDTO) {
         Order order = orderRepository.findById(createNewComplaintDTO.getOrderId()).orElseThrow();
         User user = userRepository.findById(createNewComplaintDTO.getUserId()).orElseThrow();
         ComplaintStatus complaintStatus = complaintStatusRepository.findComplaintStatusByStatus("OPEN");
@@ -383,10 +383,14 @@ public class DatabaseService {
         complaint.setComplaintCategory(complaintCategory);
         complaint.setCreatedDate(new Date());
         complaint.setOrder(order);
+
         complaint.setComplaintChatMessages(Set.of(complaintChatMessage));
         complaintChatMessage.setComplaint(complaint);
+        order.setComplaint(complaint);
 
         complaintRepository.save(complaint);
-
+        complaintChatMessageRepository.save(complaintChatMessage);
+        orderRepository.save(order);
+        return complaint.getId();
     }
 }

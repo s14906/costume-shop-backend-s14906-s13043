@@ -39,7 +39,7 @@ public class Order {
     private Address address;
 
     @OneToOne
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "complaint_id")
     @JsonBackReference
     private Complaint complaint;
 

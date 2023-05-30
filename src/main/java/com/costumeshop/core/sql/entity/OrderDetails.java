@@ -31,4 +31,9 @@ public class OrderDetails {
     @ManyToOne
     @JoinColumn(name = "order_id")
     private Order order;
+
+    @OneToOne
+    @JoinColumn(name = "id")
+    @JsonBackReference
+    private Complaint complaint;
 }

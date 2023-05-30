@@ -1,6 +1,7 @@
 package com.costumeshop.controller;
 
 import com.costumeshop.model.dto.*;
+import com.costumeshop.model.response.CreateNewComplaintResponse;
 import com.costumeshop.model.response.SimpleResponse;
 import com.costumeshop.service.DatabaseService;
 import lombok.RequiredArgsConstructor;
@@ -92,18 +93,20 @@ public class OrderController {
             @RequestBody CreateNewComplaintDTO createNewComplaintDTO) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        Integer complaintId;
         try {
-            databaseService.saveNewComplaint(createNewComplaintDTO);
+            complaintId = databaseService.saveNewComplaint(createNewComplaintDTO);
         } catch (Exception e) {
-            return new ResponseEntity<>(SimpleResponse.builder()
+            return new ResponseEntity<>(CreateNewComplaintResponse.builder()
                     .success(false)
                     .message("Error occurred when creating a new complaint!")
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseEntity<>(SimpleResponse.builder()
+        return new ResponseEntity<>(CreateNewComplaintResponse.builder()
                 .success(true)
                 .message("New complaint created successfully!")
+                .complaintId(complaintId)
                 .build(), responseHeaders, HttpStatus.OK);
     }
 }
