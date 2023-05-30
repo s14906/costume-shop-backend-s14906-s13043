@@ -13,6 +13,7 @@ import java.util.Set;
 public class OrderDetailsDTO {
     private Date orderDate;
     private Integer orderId;
+    private ComplaintDTO complaint;
     private Set<ItemWithImageDTO> items;
 
 }
