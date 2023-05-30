@@ -345,24 +345,20 @@ public class DatabaseService {
             itemWithImageDTOs.add(itemWithImageDTO);
         }
 
-        return OrderDetailsDTO.builder()
-                .orderId(order.getId())
-                .orderDate(order.getCreatedDate())
-                .items(itemWithImageDTOs)
-                .build();
-
         if (complaint != null) {
             ComplaintDTO complaintDTO = ComplaintDTO.builder()
                     .complaintId(complaint.getId())
                     .build();
             return OrderDetailsDTO.builder()
                     .orderId(order.getId())
+                    .orderDate(order.getCreatedDate())
                     .complaint(complaintDTO)
                     .items(itemWithImageDTOs)
                     .build();
         } else {
             return OrderDetailsDTO.builder()
                     .orderId(order.getId())
+                    .orderDate(order.getCreatedDate())
                     .items(itemWithImageDTOs)
                     .build();
         }
