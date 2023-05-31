@@ -294,6 +294,7 @@ public class DatabaseService {
         complaintChatMessage.setComplaint(complaint);
         complaintChatMessage.setChatMessage(complaintChatMessageDTO.getChatMessage());
         complaintChatMessage.setUser(user);
+        complaintChatMessage.setUser(complaintChatMessage.getUser());
         complaintChatMessage.setCreatedDate(new Date());
         complaintChatMessageRepository.save(complaintChatMessage);
 
@@ -316,6 +317,7 @@ public class DatabaseService {
                 .complaintStatus(complaint.getComplaintStatus().getStatus())
                 .employeeName(employee != null ? employee.getName() : null)
                 .employeeSurname(employee != null ? employee.getSurname() : null)
+                .createdDate(complaint.getCreatedDate())
                 .build();
     }
 

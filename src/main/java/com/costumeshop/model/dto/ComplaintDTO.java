@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Getter
 @Setter
 @Builder
@@ -16,5 +18,5 @@ public class ComplaintDTO {
     private String employeeName;
     private String employeeSurname;
     private String complaintStatus;
-
+    private Date createdDate;
 }
