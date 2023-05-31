@@ -13,8 +13,7 @@ import java.util.Set;
 public class ComplaintChatMessageDTO {
     private Integer chatMessageId;
     private Integer complaintId;
-    private String chatMessageUserName;
-    private String chatMessageUserSurname;
+    private UserDTO user;
     private String chatMessage;
     private Date createdDate;
     private Set<String> chatImagesBase64;

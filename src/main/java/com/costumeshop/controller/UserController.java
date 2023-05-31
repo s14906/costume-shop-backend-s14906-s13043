@@ -143,7 +143,7 @@ public class UserController {
 
         if (user != null) {
             UserDTO userDTO = UserDTO.builder()
-                    .id(Long.valueOf(user.getId()))
+                    .id(user.getId())
                     .password(user.getPassword())
                     .token(user.getVerificationToken())
                     .emailVerified(user.getEmailVerified())

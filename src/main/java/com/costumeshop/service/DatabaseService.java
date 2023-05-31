@@ -263,13 +263,21 @@ public class DatabaseService {
                             .map(ComplaintChatImage::getChatImageBase64)
                             .collect(Collectors.toSet());
 
+            User user = complaintChatMessage.getUser();
+
+            UserDTO userDTO = UserDTO.builder()
+                    .id(user.getId())
+                    .roles(user.getUserRoles().stream().map(UserRole::getRole).collect(Collectors.toList()))
+                    .name(user.getName())
+                    .surname(user.getSurname())
+                    .build();
+
             ComplaintChatMessageDTO complaintChatMessageDTO = ComplaintChatMessageDTO.builder()
                     .complaintId(complaintId)
                     .chatMessageId(complaintChatMessage.getId())
                     .chatMessage(complaintChatMessage.getChatMessage())
                     .createdDate(complaintChatMessage.getCreatedDate())
-                    .chatMessageUserName(complaintChatMessage.getChatMessageUserName())
-                    .chatMessageUserSurname(complaintChatMessage.getChatMessageUserSurname())
+                    .user(userDTO)
                     .chatImagesBase64(complaintChatImagesBase64)
                     .build();
 
@@ -284,8 +292,7 @@ public class DatabaseService {
         ComplaintChatMessage complaintChatMessage = new ComplaintChatMessage();
         complaintChatMessage.setComplaint(complaint);
         complaintChatMessage.setChatMessage(complaintChatMessageDTO.getChatMessage());
-        complaintChatMessage.setChatMessageUserName(complaintChatMessageDTO.getChatMessageUserName());
-        complaintChatMessage.setChatMessageUserSurname(complaintChatMessageDTO.getChatMessageUserSurname());
+        complaintChatMessage.setUser(complaintChatMessage.getUser());
         complaintChatMessage.setCreatedDate(new Date());
         complaintChatMessageRepository.save(complaintChatMessage);
 
@@ -370,12 +377,11 @@ public class DatabaseService {
         ComplaintStatus complaintStatus = complaintStatusRepository.findComplaintStatusByStatus("OPEN");
         ComplaintCategory complaintCategory = complaintCategoryRepository
                 .findComplaintCategoryByCategory(createNewComplaintDTO.getComplaintCategory());
-        ComplaintChatMessage complaintChatMessage = new ComplaintChatMessage();
 
-        complaintChatMessage.setChatMessageUserName(user.getName());
+        ComplaintChatMessage complaintChatMessage = new ComplaintChatMessage();
+        complaintChatMessage.setUser(user);
         complaintChatMessage.setCreatedDate(new Date());
         complaintChatMessage.setChatMessage(createNewComplaintDTO.getComplaintMessage());
-        complaintChatMessage.setChatMessageUserSurname(user.getSurname());
 
         Complaint complaint = new Complaint();
         complaint.setUser(user);

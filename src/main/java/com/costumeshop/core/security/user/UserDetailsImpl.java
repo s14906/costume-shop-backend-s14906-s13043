@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 public class UserDetailsImpl implements UserDetails {
-    private Long id;
+    private Integer id;
 
     private String username;
 
@@ -26,7 +26,7 @@ public class UserDetailsImpl implements UserDetails {
 
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(Long id, String username, String email, String password,
+    public UserDetailsImpl(Integer id, String username, String email, String password,
                            Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.username = username;
@@ -42,7 +42,7 @@ public class UserDetailsImpl implements UserDetails {
                 .collect(Collectors.toList());
 
         return new UserDetailsImpl(
-                Long.valueOf(user.getId()),
+                user.getId(),
                 user.getUsername(),
                 user.getEmail(),
                 user.getPassword(),

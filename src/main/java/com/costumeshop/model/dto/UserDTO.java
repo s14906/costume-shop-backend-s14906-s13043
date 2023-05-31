@@ -10,7 +10,7 @@ import java.util.List;
 @Setter
 @Builder
 public class UserDTO {
-    private Long id;
+    private Integer id;
     private String email;
     private String password;
     private String username;

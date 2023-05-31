@@ -1,5 +1,6 @@
 package com.costumeshop.core.sql.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -21,10 +22,13 @@ public class ComplaintChatMessage {
     private Integer id;
     private String chatMessage;
     private Date createdDate;
-    private String chatMessageUserName;
-    private String chatMessageUserSurname;
 
-//    @JsonBackReference
+    @JsonBackReference
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "complaint_id")
     private Complaint complaint;
