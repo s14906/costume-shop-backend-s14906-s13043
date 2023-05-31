@@ -288,11 +288,12 @@ public class DatabaseService {
 
 
     public void saveComplaintChatMessage(ComplaintChatMessageDTO complaintChatMessageDTO) {
+        User user = userRepository.findById(complaintChatMessageDTO.getUser().getId()).orElseThrow();
         Complaint complaint = complaintRepository.findById(complaintChatMessageDTO.getComplaintId()).orElseThrow();
         ComplaintChatMessage complaintChatMessage = new ComplaintChatMessage();
         complaintChatMessage.setComplaint(complaint);
         complaintChatMessage.setChatMessage(complaintChatMessageDTO.getChatMessage());
-        complaintChatMessage.setUser(complaintChatMessage.getUser());
+        complaintChatMessage.setUser(user);
         complaintChatMessage.setCreatedDate(new Date());
         complaintChatMessageRepository.save(complaintChatMessage);
 
