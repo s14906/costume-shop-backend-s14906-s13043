@@ -310,7 +310,7 @@ public class DatabaseService {
         User employee = complaint.getUser();
         return ComplaintDTO.builder()
                 .complaintId(complaint.getId())
-                .buyerId(complaint.getOrder().getId())
+                .buyerId(complaint.getOrder().getUser().getId())
                 .employeeId(employee != null ? employee.getId() : null)
                 .buyerName(complaint.getOrder().getUser().getName())
                 .buyerSurname(complaint.getOrder().getUser().getSurname())
