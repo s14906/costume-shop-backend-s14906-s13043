@@ -14,6 +14,7 @@ public class OrderDetailsDTO {
     private Date orderDate;
     private Integer orderId;
     private ComplaintDTO complaint;
+    private Integer buyerId;
     private Set<ItemWithImageDTO> items;
 
 }

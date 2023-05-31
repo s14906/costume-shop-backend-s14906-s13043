@@ -367,6 +367,7 @@ public class DatabaseService {
                     .build();
             return OrderDetailsDTO.builder()
                     .orderId(order.getId())
+                    .buyerId(order.getUser().getId())
                     .orderDate(order.getCreatedDate())
                     .complaint(complaintDTO)
                     .items(itemWithImageDTOs)
