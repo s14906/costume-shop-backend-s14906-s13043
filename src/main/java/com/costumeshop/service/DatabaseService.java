@@ -321,20 +321,26 @@ public class DatabaseService {
                 .build();
     }
 
-    public List<OrderHistoryDTO> findAllOrdersForUser(Integer userId) {
+    public List<OrderDTO> findAllOrdersForUser(Integer userId) {
         User user = userRepository.findById(userId).orElseThrow();
-        List<OrderHistoryDTO> orderHistoryDTOs = new ArrayList<>();
+        List<OrderDTO> orderDTOS = new ArrayList<>();
         for (Order order : user.getOrders()) {
-            OrderHistoryDTO orderHistoryDTO = OrderHistoryDTO.builder()
+            UserDTO userDTO = UserDTO.builder()
+                    .id(user.getId())
+                    .name(user.getName())
+                    .surname(user.getSurname())
+                    .phone(user.getPhone())
+                    .email(user.getEmail())
+                    .build();
+            OrderDTO orderDTO = OrderDTO.builder()
                     .orderId(order.getId())
-                    .orderUserName(order.getUser().getName())
-                    .orderUserSurname(order.getUser().getSurname())
+                    .user(userDTO)
                     .orderStatus(order.getOrderStatus().getStatus())
                     .createdDate(order.getCreatedDate())
                     .build();
-            orderHistoryDTOs.add(orderHistoryDTO);
+            orderDTOS.add(orderDTO);
         }
-        return orderHistoryDTOs;
+        return orderDTOS;
     }
 
     public OrderDetailsDTO findOrderDetailsByOrderId(Integer orderId) {
@@ -401,5 +407,29 @@ public class DatabaseService {
         complaintChatMessageRepository.save(complaintChatMessage);
         orderRepository.save(order);
         return complaint.getId();
+    }
+
+    public List<OrderDTO> findAllOrders() {
+        List<OrderDTO> orderDTOs = new ArrayList<>();
+        for (Order order : orderRepository.findAll()) {
+            User user = order.getUser();
+            UserDTO userDTO = UserDTO.builder()
+                    .id(user.getId())
+                    .name(user.getName())
+                    .surname(user.getSurname())
+                    .phone(user.getPhone())
+                    .email(user.getEmail())
+                    .build();
+
+            OrderDTO orderDTO = OrderDTO.builder()
+                    .orderId(order.getId())
+                    .orderStatus(order.getOrderStatus().getStatus())
+                    .user(userDTO)
+                    .build();
+
+            orderDTOs.add(orderDTO);
+        }
+
+        return orderDTOs;
     }
 }

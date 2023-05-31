@@ -23,6 +23,11 @@ public class OrderController {
     private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
     private final DatabaseService databaseService;
 
+    @GetMapping(path = "/orders")
+    public List<OrderDTO> getAllOrders() {
+        return databaseService.findAllOrders();
+    }
+
     @GetMapping(path = "/complaints")
     public List<ComplaintDTO> getAllComplaints() {
         return databaseService.findAllComplaints();
@@ -80,7 +85,7 @@ public class OrderController {
     }
 
     @GetMapping(path = "/users/{userId}/orders")
-    public List<OrderHistoryDTO> getOrdersForUser(@PathVariable("userId") Integer userId) {
+    public List<OrderDTO> getOrdersForUser(@PathVariable("userId") Integer userId) {
         return databaseService.findAllOrdersForUser(userId);
     }
 

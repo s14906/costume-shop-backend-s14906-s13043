@@ -9,10 +9,9 @@ import java.util.Date;
 @Getter
 @Setter
 @Builder
-public class OrderHistoryDTO {
+public class OrderDTO {
     private Integer orderId;
-    private String orderUserName;
-    private String orderUserSurname;
+    private UserDTO user;
     private String orderStatus;
     private Date createdDate;
 
