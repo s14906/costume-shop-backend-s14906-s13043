@@ -1,7 +1,7 @@
 package com.costumeshop.controller;
 
 import com.costumeshop.model.dto.*;
-import com.costumeshop.model.response.CreateNewComplaintResponse;
+import com.costumeshop.model.response.ComplaintResponse;
 import com.costumeshop.model.response.SimpleResponse;
 import com.costumeshop.service.DatabaseService;
 import lombok.RequiredArgsConstructor;
@@ -47,14 +47,15 @@ public class OrderController {
         try {
             databaseService.saveComplaintChatMessage(complaintChatMessageDTO);
         } catch (Exception e) {
-            return new ResponseEntity<>(SimpleResponse.builder()
+            return new ResponseEntity<>(ComplaintResponse.builder()
                     .success(false)
                     .message("Error occurred when saving the message!")
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(SimpleResponse.builder()
+        return new ResponseEntity<>(ComplaintResponse.builder()
                 .success(true)
                 .message("Message sent!")
+                .complaintId(complaintChatMessageDTO.getComplaintId())
                 .build(), responseHeaders, HttpStatus.OK);
     }
 
@@ -97,13 +98,13 @@ public class OrderController {
         try {
             complaintId = databaseService.saveNewComplaint(createNewComplaintDTO);
         } catch (Exception e) {
-            return new ResponseEntity<>(CreateNewComplaintResponse.builder()
+            return new ResponseEntity<>(ComplaintResponse.builder()
                     .success(false)
                     .message("Error occurred when creating a new complaint!")
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseEntity<>(CreateNewComplaintResponse.builder()
+        return new ResponseEntity<>(ComplaintResponse.builder()
                 .success(true)
                 .message("New complaint created successfully!")
                 .complaintId(complaintId)

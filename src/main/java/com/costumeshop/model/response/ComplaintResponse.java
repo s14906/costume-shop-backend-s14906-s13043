@@ -4,11 +4,11 @@ import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-public class CreateNewComplaintResponse extends AbstractResponse {
+public class ComplaintResponse extends AbstractResponse {
     private final Integer complaintId;
 
     @Builder
-    public CreateNewComplaintResponse(boolean success, String message, Integer complaintId) {
+    public ComplaintResponse(boolean success, String message, Integer complaintId) {
         super(success, message);
         this.complaintId = complaintId;
     }
