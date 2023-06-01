@@ -3,7 +3,10 @@ package com.costumeshop.controller;
 import com.costumeshop.core.security.jwt.JwtUtils;
 import com.costumeshop.core.security.user.UserDetailsImpl;
 import com.costumeshop.core.sql.entity.User;
-import com.costumeshop.core.sql.entity.UserRole;
+import com.costumeshop.exception.DataException;
+import com.costumeshop.info.codes.ErrorCode;
+import com.costumeshop.info.codes.InfoCode;
+import com.costumeshop.info.utils.CodeMessageUtils;
 import com.costumeshop.model.dto.AddressDTO;
 import com.costumeshop.model.dto.UserDTO;
 import com.costumeshop.model.dto.UserLoginDTO;
@@ -11,8 +14,11 @@ import com.costumeshop.model.dto.UserRegistrationDTO;
 import com.costumeshop.model.response.GetAddressesResponse;
 import com.costumeshop.model.response.SimpleResponse;
 import com.costumeshop.model.response.UserResponse;
+import com.costumeshop.service.DataMapperService;
 import com.costumeshop.service.DatabaseService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -36,44 +42,43 @@ import java.util.stream.Collectors;
 public class UserController {
 
     //TODO: logging
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+
     private final DatabaseService databaseService;
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
+    private final DataMapperService dataMapperService;
 
 
     @PostMapping(path = "/registration")
     public @ResponseBody ResponseEntity<?> registerNewUser(@RequestBody UserRegistrationDTO dto) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-        User existingUserByEmail = databaseService.findUserByEmail(dto.getEmail());
-        if (existingUserByEmail != null) {
-            return new ResponseEntity<>(SimpleResponse.builder()
-                    .success(false)
-                    .message("User with that email address already exists!")
-                    .build(), responseHeaders, HttpStatus.FORBIDDEN);
-        }
-
-        User existingUserByUsername = databaseService.findUserByUsername(dto.getEmail());
-        if (existingUserByUsername != null) {
-            return new ResponseEntity<>(SimpleResponse.builder()
-                    .success(false)
-                    .message("User with that username address already exists!")
-                    .build(), responseHeaders, HttpStatus.FORBIDDEN);
-        }
-
         try {
-            databaseService.insertNewRegisteredUser(dto);
+            User existingUserByEmail = databaseService.findUserByEmail(dto.getEmail());
+            if (existingUserByEmail != null) {
+                throw new DataException(ErrorCode.ERR_009);
+            }
+
+            User existingUserByUsername = databaseService.findUserByUsername(dto.getEmail());
+            if (existingUserByUsername != null) {
+                throw new DataException(ErrorCode.ERR_010);
+            }
+
+            Integer userId = databaseService.insertNewRegisteredUser(dto);
+
+            CodeMessageUtils.logMessage(InfoCode.INFO_017, userId, logger);
+            return new ResponseEntity<>(SimpleResponse.builder()
+                    .success(true)
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_003))
+                    .build(), responseHeaders, HttpStatus.OK);
         } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_008, e, logger);
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
-                    .message("Failed to insert new user data into the database!")
-                    .build(), responseHeaders, HttpStatus.FORBIDDEN);
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_008, e))
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<>(SimpleResponse.builder()
-                .success(true)
-                .message("Registration successful!")
-                .build(), responseHeaders, HttpStatus.OK);
     }
 
     @PostMapping("/login")
@@ -81,86 +86,66 @@ public class UserController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-        User user = databaseService.findUserByUsernameOrEmail(dto.getEmail());
-        if (user == null) {
-            return new ResponseEntity<>(SimpleResponse.builder()
-                    .success(false)
-                    .message("User with that username or email not found in the database!")
-                    .build(), responseHeaders, HttpStatus.NOT_FOUND);
-        }
-
-        Integer emailVerified = user.getEmailVerified();
-        if (emailVerified == null || emailVerified.equals(0)) {
-            return new ResponseEntity<>(SimpleResponse.builder()
-                    .success(false)
-                    .message("User account is not verified! Click on the verification link that has been mailed to you.")
-                    .build(), responseHeaders, HttpStatus.UNAUTHORIZED);
-        }
-
-        Authentication authentication;
         try {
-            authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword()));
-        } catch (AuthenticationException e) {
+            User user = databaseService.findUserByUsernameOrEmail(dto.getEmail());
+            Integer emailVerified = user.getEmailVerified();
+            if (emailVerified == null || emailVerified.equals(0)) {
+                throw new DataException(ErrorCode.ERR_012);
+            }
+
+            Authentication authentication;
+            try {
+                authentication = authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword()));
+            } catch (AuthenticationException e) {
+                e.printStackTrace();
+                throw new DataException(ErrorCode.ERR_013);
+            }
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String token = jwtUtils.generateJwtToken(authentication);
+
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            List<String> roles = userDetails.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList());
+
+            UserDTO userDTO = dataMapperService.userWithUserDetailsToUserDTO(user, token, userDetails, roles);
+            CodeMessageUtils.logMessage(InfoCode.INFO_012, userDetails.getId(), logger);
+            return new ResponseEntity<>(UserResponse.builder()
+                    .user(userDTO)
+                    .success(true)
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_004, userDetails.getUsername()))
+                    .build(), responseHeaders, HttpStatus.OK);
+        } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_031, e, logger);
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
-                    .message("Authentication error! Is your email/username/password valid?")
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_031, e))
                     .build(), responseHeaders, HttpStatus.UNAUTHORIZED);
         }
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String token = jwtUtils.generateJwtToken(authentication);
-
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
-
-        UserDTO userDTO = UserDTO.builder()
-                .token(token)
-                .id(userDetails.getId())
-                .username(userDetails.getUsername())
-                .name(user.getName())
-                .surname(user.getSurname())
-                .phone(user.getPhone())
-                .email(userDetails.getEmail())
-                .roles(roles)
-                .build();
-
-        return new ResponseEntity<>(UserResponse.builder()
-                .user(userDTO)
-                .success(true)
-                .message("Login successful! Hello, " + userDetails.getUsername() + "!")
-                .build(), responseHeaders, HttpStatus.OK);
     }
 
     @GetMapping("/users")
     public @ResponseBody ResponseEntity<?> getUserByVerificationToken(@RequestParam String verificationToken) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-        User user = databaseService.findUserByVerificationToken(verificationToken);
+        try {
+            User user = databaseService.findUserByVerificationToken(verificationToken);
 
-
-        if (user != null) {
-            UserDTO userDTO = UserDTO.builder()
-                    .id(user.getId())
-                    .password(user.getPassword())
-                    .token(user.getVerificationToken())
-                    .emailVerified(user.getEmailVerified())
-                    .email(user.getEmail())
-                    .name(user.getName())
-                    .phone(user.getPhone())
-                    .roles(user.getUserRoles().stream().map(UserRole::getRole).collect(Collectors.toList()))
-                    .build();
+            UserDTO userDTO = dataMapperService.userToUserDTO(user);
+            CodeMessageUtils.logMessage(InfoCode.INFO_019, userDTO.getId(), logger);
             return new ResponseEntity<>(UserResponse.builder()
                     .user(userDTO)
                     .success(true)
-                    .message("User found!")
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_005))
                     .build(), responseHeaders, HttpStatus.OK);
-        } else {
+
+        } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_035, e, logger);
             return new ResponseEntity<>(UserResponse.builder()
                     .success(false)
-                    .message("User not found!")
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_035, e))
                     .build(), responseHeaders, HttpStatus.NOT_FOUND);
         }
     }
@@ -171,14 +156,16 @@ public class UserController {
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
             databaseService.verifyUser(userId);
+            CodeMessageUtils.logMessage(InfoCode.INFO_020, userId, logger);
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(true)
-                    .message("User verified!")
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_007))
                     .build(), responseHeaders, HttpStatus.OK);
         } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_029, userId, e, logger);
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
-                    .message("Failed to verify user: " + e.getMessage())
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_029, userId, e))
                     .build(), responseHeaders, HttpStatus.OK);
         }
     }
@@ -188,39 +175,40 @@ public class UserController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            databaseService.insertNewAddressForUser(request);
+            Integer addressId = databaseService.insertNewAddressForUser(request);
+            CodeMessageUtils.logMessage(InfoCode.INFO_014, addressId, request.getUserId(), logger);
+            return new ResponseEntity<>(SimpleResponse.builder()
+                    .success(true)
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_013))
+                    .build(), responseHeaders, HttpStatus.OK);
         } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_036, e, logger);
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
-                    .message("Error occurred when adding address!")
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_036, e))
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(SimpleResponse.builder()
-                .success(true)
-                .message("Address added!")
-                .build(), responseHeaders, HttpStatus.OK);
     }
 
     @GetMapping("/get-addresses")
     public @ResponseBody ResponseEntity<?> getAddressesForUser(@RequestParam Integer userId) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-        List<AddressDTO> addresses;
         try {
-            addresses = databaseService.getAddressesForUser(userId);
+            List<AddressDTO> addresses = databaseService.getAddressesForUser(userId);
+            CodeMessageUtils.logMessage(InfoCode.INFO_015, userId, logger);
+            return new ResponseEntity<>(GetAddressesResponse.builder()
+                    .success(true)
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_008))
+                    .addresses(addresses)
+                    .build(), responseHeaders, HttpStatus.OK);
         } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_037, e, logger);
             return new ResponseEntity<>(GetAddressesResponse.builder()
                     .success(false)
-                    .message("Error occurred when retrieving addresses!")
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_037, e))
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-        return new ResponseEntity<>(GetAddressesResponse.builder()
-                .success(true)
-                .message("Addresses retrieved!")
-                .addresses(addresses)
-                .build(), responseHeaders, HttpStatus.OK);
-
     }
 
     @PostMapping("/remove-address")
@@ -229,21 +217,24 @@ public class UserController {
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
             databaseService.deleteAddress(addressId);
+            CodeMessageUtils.logMessage(InfoCode.INFO_016, addressId, logger);
+            return new ResponseEntity<>(SimpleResponse.builder()
+                    .success(true)
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_009))
+                    .build(), responseHeaders, HttpStatus.OK);
         } catch (DataIntegrityViolationException e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_039, e, logger);
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
-                    .message("Error occurred when removing address! The address is connected to an existing complaint!")
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_039, e))
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_040, e, logger);
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
-                    .message("Error occurred when removing address!")
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_040, e))
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(SimpleResponse.builder()
-                .success(true)
-                .message("Address removed!")
-                .build(), responseHeaders, HttpStatus.OK);
     }
 
     @PostMapping("/change-password")
@@ -253,16 +244,18 @@ public class UserController {
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
             databaseService.changePasswordForUser(userId, newPassword);
+            CodeMessageUtils.logMessage(InfoCode.INFO_018, userId, logger);
+            return new ResponseEntity<>(SimpleResponse.builder()
+                    .success(true)
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_010))
+                    .build(), responseHeaders, HttpStatus.OK);
         } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_041, e, logger);
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
-                    .message("Error occurred when changing password!")
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_041, e))
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(SimpleResponse.builder()
-                .success(true)
-                .message("Password changed!")
-                .build(), responseHeaders, HttpStatus.OK);
     }
 
 }

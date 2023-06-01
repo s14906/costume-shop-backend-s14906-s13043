@@ -1,15 +1,17 @@
 package com.costumeshop.service;
 
-import com.costumeshop.model.dto.*;
 import com.costumeshop.core.sql.entity.*;
 import com.costumeshop.core.sql.repository.*;
-import com.costumeshop.model.dto.AddressDTO;
-import com.costumeshop.model.dto.AddToCartDTO;
+import com.costumeshop.exception.DatabaseException;
+import com.costumeshop.info.codes.ErrorCode;
+import com.costumeshop.exception.DataException;
+import com.costumeshop.info.codes.InfoCode;
+import com.costumeshop.info.utils.CodeMessageUtils;
+import com.costumeshop.model.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.IterableUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +25,6 @@ public class DatabaseService {
     //TODO: proper exception throwing/catching
     //TODO: rework the entity passing (create DTOs) to avoid lazy object loading
     private static final Logger logger = LoggerFactory.getLogger(DatabaseService.class);
-    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
     private final AddressRepository addressRepository;
@@ -39,39 +40,27 @@ public class DatabaseService {
     private final OrderRepository orderRepository;
     private final MailService mailService;
     private final PasswordService passwordService;
+    private final DataMapperService dataMapperService;
 
-    public void insertNewRegisteredUser(UserRegistrationDTO userRegistrationDTO) {
-        User newUser = new User();
-        newUser.setName(userRegistrationDTO.getName());
-        newUser.setEmail(userRegistrationDTO.getEmail());
-        newUser.setUsername(userRegistrationDTO.getUsername());
-        newUser.setSurname(userRegistrationDTO.getSurname());
-        newUser.setPassword(passwordEncoder.encode(userRegistrationDTO.getPassword()));
-        newUser.setPhone(userRegistrationDTO.getPhone());
-        newUser.setEmailVerified(0);
-        UserRole userRole = userRoleRepository.findById(1).orElseThrow();
-        newUser.setUserRoles(Set.of(userRole));
-
-        String verificationToken = UUID.randomUUID().toString();
-        newUser.setVerificationToken(verificationToken);
-
-        userRepository.save(newUser);
-
+    public Integer insertNewRegisteredUser(UserRegistrationDTO userRegistrationDTO) {
         try {
-            mailService.sendVerificationEmail(newUser);
-        } catch (Exception e) {
-            logger.error(e.getMessage(), e);
-            throw new RuntimeException(e);
-        }
+            UserRole userRole = userRoleRepository.findById(1).orElseThrow();
+            User newUser = dataMapperService.userRegistrationDTOtoUser(userRegistrationDTO, userRole);
 
-        Address address = new Address();
-        AddressDTO addressDTO = userRegistrationDTO.getAddress();
-        address.setCity(addressDTO.getCity());
-        address.setStreet(addressDTO.getStreet());
-        address.setPostalCode(addressDTO.getPostalCode());
-        address.setFlatNumber(addressDTO.getFlatNumber());
-        address.setUser(newUser);
-        addressRepository.save(address);
+            String verificationToken = UUID.randomUUID().toString();
+            newUser.setVerificationToken(verificationToken);
+
+            userRepository.save(newUser);
+
+            Address address = dataMapperService.addressDTOToUser(userRegistrationDTO, newUser);
+            addressRepository.save(address);
+
+            mailService.sendVerificationEmail(newUser);
+            return newUser.getId();
+
+        } catch (Exception e) {
+            throw new DatabaseException(ErrorCode.ERR_034, e);
+        }
     }
 
     public User findUserByEmail(String email) {
@@ -79,23 +68,37 @@ public class DatabaseService {
     }
 
     public User findUserByVerificationToken(String verificationToken) {
-        return userRepository.findByVerificationToken(verificationToken);
+        return Optional.ofNullable(userRepository.findByVerificationToken(verificationToken))
+                .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_019));
     }
 
     public User findUserByUsernameOrEmail(String username) {
         User user = userRepository.findByUsername(username);
         if (user == null) {
+            CodeMessageUtils.logMessage(InfoCode.INFO_001, username, logger);
             user = userRepository.findByEmail(username);
+        }
+        if (user == null) {
+            CodeMessageUtils.logMessage(InfoCode.INFO_002, username, logger);
+            throw new DataException(ErrorCode.ERR_032);
         }
         return user;
     }
 
     public void verifyUser(Integer userId) {
-        User user = userRepository
-                .findById(userId)
-                .orElseThrow();
-        user.setEmailVerified(1);
-        userRepository.save(user);
+        try {
+            if (userId == null) {
+                throw new DataException(ErrorCode.ERR_017);
+            }
+            User user = userRepository
+                    .findById(userId)
+                    .orElseThrow(() -> new DataException(ErrorCode.ERR_027, userId));
+            user.setEmailVerified(1);
+            userRepository.save(user);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+            throw new DatabaseException(ErrorCode.ERR_028, e.getMessage());
+        }
     }
 
     public User findUserByUsername(String username) {
@@ -103,11 +106,13 @@ public class DatabaseService {
     }
 
     public User findUserById(Integer id) {
-        return userRepository.findById(id).orElseThrow();
+        return userRepository.findById(id).orElseThrow(() ->
+                new DatabaseException(ErrorCode.ERR_027, id));
     }
 
     public Item findItemById(Integer id) {
-        return itemRepository.findById(id).orElseThrow();
+        return itemRepository.findById(id).orElseThrow(() ->
+                new DatabaseException(ErrorCode.ERR_053, id));
     }
 
     public List<ItemWithImageDTO> findAllItemsWithImages() {
@@ -115,19 +120,10 @@ public class DatabaseService {
         for (Item item : itemRepository.findAll()) {
             List<ItemImageDTO> itemImageDTOs = new ArrayList<>();
             for (ItemImage itemImage : item.getItemImages()) {
-                ItemImageDTO itemImageDTO = ItemImageDTO.builder()
-                        .imageId(itemImage.getId())
-                        .imageBase64(itemImage.getImageBase64())
-                        .build();
+                ItemImageDTO itemImageDTO = dataMapperService.itemImageToItemImageDTO(itemImage);
                 itemImageDTOs.add(itemImageDTO);
             }
-            ItemWithImageDTO itemWithImageDTO = ItemWithImageDTO.builder()
-                    .itemId(item.getId())
-                    .itemImages(itemImageDTOs)
-                    .description(item.getDescription())
-                    .price(item.getPrice())
-                    .title(item.getTitle())
-                    .build();
+            ItemWithImageDTO itemWithImageDTO = dataMapperService.itemToItemWithImageDTO(item, itemImageDTOs);
             itemWithImageDTOs.add(itemWithImageDTO);
         }
         return itemWithImageDTOs;
@@ -136,14 +132,15 @@ public class DatabaseService {
     public List<ComplaintDTO> findAllComplaints() {
         List<ComplaintDTO> complaintDTOs = new ArrayList<>();
         for (Complaint complaint : complaintRepository.findAll()) {
-            ComplaintDTO complaintDTO = getComplaintDTO(complaint);
+            ComplaintDTO complaintDTO = dataMapperService.getComplaintDTO(complaint);
             complaintDTOs.add(complaintDTO);
         }
         return complaintDTOs;
     }
 
     public ItemSize findItemSizeById(Integer id) {
-        return itemSizeRepository.findById(id).orElseThrow();
+        return itemSizeRepository.findById(id).orElseThrow(() ->
+                new DatabaseException(ErrorCode.ERR_054, id));
     }
 
     public List<ItemSize> findAllItemSizes() {
@@ -155,105 +152,125 @@ public class DatabaseService {
     }
 
     public void insertItemToCart(AddToCartDTO request) {
-        User user = findUserById(request.getUserId());
-        Item item = findItemById(request.getItemId());
-        ItemSize itemSize = findItemSizeById(request.getItemSizeId());
+        try {
+            User user = findUserById(request.getUserId());
+            Item item = findItemById(request.getItemId());
 
-        List<ItemCart> existingCartItems =
-                itemCartRepository.findAllByUserAndItemAndItemSize(user, item, itemSize);
+            ItemSize itemSize = findItemSizeById(request.getItemSizeId());
 
-        ItemCart itemCart = new ItemCart();
-        itemCart.setUser(user);
-        itemCart.setItem(item);
-        itemCart.setItemSize(itemSize);
+            List<ItemCart> existingCartItems =
+                    itemCartRepository.findAllByUserAndItemAndItemSize(user, item, itemSize);
 
-        if (!existingCartItems.isEmpty()) {
-            existingCartItems.forEach(existingCartItem -> {
-                existingCartItem.setItemAmount(existingCartItem.getItemAmount() + request.getItemAmount());
-                itemCartRepository.save(existingCartItem);
-            });
-        } else {
-            itemCart.setItemAmount(request.getItemAmount());
-            itemCartRepository.save(itemCart);
+            ItemCart itemCart = new ItemCart();
+            itemCart.setUser(user);
+            itemCart.setItem(item);
+            itemCart.setItemSize(itemSize);
+
+            if (!existingCartItems.isEmpty()) {
+                existingCartItems.forEach(existingCartItem -> {
+                    existingCartItem.setItemAmount(existingCartItem.getItemAmount() + request.getItemAmount());
+                    itemCartRepository.save(existingCartItem);
+                    CodeMessageUtils.logMessage(InfoCode.INFO_022, user.getId(), existingCartItem.getId(), logger);
+                });
+            } else {
+                itemCart.setItemAmount(request.getItemAmount());
+                itemCartRepository.save(itemCart);
+                CodeMessageUtils.logMessage(InfoCode.INFO_023, user.getId(), itemCart.getId(), logger);
+            }
+        } catch (Exception e) {
+            throw new DataException(e);
         }
     }
 
     public List<CartItemDTO> findCartItemsForUser(Integer userId) {
+        if (userId == null) {
+            throw new DataException(ErrorCode.ERR_017);
+        }
         List<CartItemDTO> cartItemDTOs = new ArrayList<>();
         for (ItemCart itemCart : itemCartRepository.findAllByUserId(userId)) {
-            CartItemDTO cartItemDTO = CartItemDTO.builder()
-                    .itemsAmount(itemCart.getItemAmount())
-                    .size(itemCart.getItemSize().getSize())
-                    .price(itemCart.getItem().getPrice())
-                    .title(itemCart.getItem().getTitle())
-                    .build();
+            CartItemDTO cartItemDTO = dataMapperService.cartItemToCartItemDTO(itemCart, userId);
             cartItemDTOs.add(cartItemDTO);
         }
         return cartItemDTOs;
     }
 
-    public void insertNewAddressForUser(AddressDTO dto) {
-        //TODO: exception catching
-        User user = userRepository.findById(dto.getUserId()).orElseThrow();
+    public Integer insertNewAddressForUser(AddressDTO addressDTO) {
+        try {
+            if (addressDTO == null) {
+                throw new DataException(ErrorCode.ERR_021);
+            }
+            if (addressDTO.getUserId() == null) {
+                throw new DataException(ErrorCode.ERR_017);
+            }
+            User user = userRepository.findById(addressDTO.getUserId()).orElseThrow(
+                    () -> new DataException(ErrorCode.ERR_027, addressDTO.getUserId()));
 
-        Address address = new Address();
-        address.setUser(user);
-        address.setCity(dto.getCity());
-        address.setStreet(dto.getStreet());
-        address.setFlatNumber(dto.getFlatNumber());
-        address.setPostalCode(dto.getPostalCode());
-        addressRepository.save(address);
+            Address address = dataMapperService.addressDTOToAddress(addressDTO, user);
+            addressRepository.save(address);
+            return address.getId();
+        } catch (Exception e) {
+            throw new DatabaseException(ErrorCode.ERR_030, e.getMessage());
+        }
     }
 
     public List<AddressDTO> getAddressesForUser(Integer userId) {
-        User user = userRepository.findById(userId).orElseThrow();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_027, userId));
         List<AddressDTO> addressDTOs = new ArrayList<>();
         for (Address address : user.getAddresses()) {
-            AddressDTO addressDTO = AddressDTO.builder()
-                    .addressId(address.getId())
-                    .userId(userId)
-                    .city(address.getCity())
-                    .flatNumber(address.getFlatNumber())
-                    .postalCode(address.getPostalCode())
-                    .street(address.getStreet())
-                    .build();
+            AddressDTO addressDTO = dataMapperService.addressToAddressDTO(address, userId);
             addressDTOs.add(addressDTO);
         }
         return addressDTOs;
     }
 
     public void deleteAddress(Integer addressId) {
-        Address address = addressRepository.findById(addressId).orElseThrow();
+        Address address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_038, addressId));
         addressRepository.delete(address);
     }
 
     public void changePasswordForUser(Integer userId, String newPassword) {
-        User user = userRepository.findById(userId).orElseThrow();
-        String encodedPassword = passwordService.encodePassword(newPassword);
+        try {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_027, userId));
+            String encodedPassword;
+            try {
+                encodedPassword = passwordService.encodePassword(newPassword);
+            } catch (Exception e) {
+                throw new DataException(ErrorCode.ERR_025, e);
+            }
 
-        if (encodedPassword != null) {
-            user.setPassword(encodedPassword);
-            userRepository.save(user);
-        } else {
-            throw new RuntimeException("Error occurred while changing password");
+            if (encodedPassword != null) {
+                user.setPassword(encodedPassword);
+                userRepository.save(user);
+            } else {
+                throw new DataException(ErrorCode.ERR_025);
+            }
+        } catch (Exception e) {
+            throw new DatabaseException(e);
         }
     }
 
     public void assignEmployeeToComplaint(Integer userId, Integer complaintId) {
-        User user = userRepository.findById(userId).orElseThrow();
-        Complaint complaint = complaintRepository.findById(complaintId).orElseThrow();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_027, userId));
+        Complaint complaint = this.complaintRepository.findById(complaintId).orElseThrow(() ->
+                new DatabaseException(ErrorCode.ERR_070, complaintId));
         complaint.setUser(user);
         complaintRepository.save(complaint);
 
     }
 
     public ComplaintDTO findComplaint(Integer complaintId) {
-        Complaint complaint = this.complaintRepository.findById(complaintId).orElseThrow();
-        return getComplaintDTO(complaint);
+        Complaint complaint = this.complaintRepository.findById(complaintId).orElseThrow(() ->
+                new DatabaseException(ErrorCode.ERR_070, complaintId));
+        return dataMapperService.getComplaintDTO(complaint);
     }
 
     public List<ComplaintChatMessageDTO> findComplaintChatMessages(Integer complaintId) {
-        Complaint complaint = this.complaintRepository.findById(complaintId).orElseThrow();
+        Complaint complaint = this.complaintRepository.findById(complaintId).orElseThrow(() ->
+                new DatabaseException(ErrorCode.ERR_070, complaintId));
         Set<ComplaintChatMessage> complaintChatMessages = complaint.getComplaintChatMessages();
         List<ComplaintChatMessageDTO> complaintChatMessageDTOs = new ArrayList<>();
         for (ComplaintChatMessage complaintChatMessage : complaintChatMessages) {
@@ -264,38 +281,24 @@ public class DatabaseService {
                             .collect(Collectors.toSet());
 
             User user = complaintChatMessage.getUser();
-
-            UserDTO userDTO = UserDTO.builder()
-                    .id(user.getId())
-                    .roles(user.getUserRoles().stream().map(UserRole::getRole).collect(Collectors.toList()))
-                    .name(user.getName())
-                    .surname(user.getSurname())
-                    .build();
-
-            ComplaintChatMessageDTO complaintChatMessageDTO = ComplaintChatMessageDTO.builder()
-                    .complaintId(complaintId)
-                    .chatMessageId(complaintChatMessage.getId())
-                    .chatMessage(complaintChatMessage.getChatMessage())
-                    .createdDate(complaintChatMessage.getCreatedDate())
-                    .user(userDTO)
-                    .chatImagesBase64(complaintChatImagesBase64)
-                    .build();
+            UserDTO userDTO = dataMapperService.userToUserDTO(user);
+            ComplaintChatMessageDTO complaintChatMessageDTO =
+                    dataMapperService.complaintChatMessageToComplaintChatMessageDTO(complaintId, complaintChatMessage, complaintChatImagesBase64, userDTO);
 
             complaintChatMessageDTOs.add(complaintChatMessageDTO);
         }
         return complaintChatMessageDTOs;
     }
 
-
-    public void saveComplaintChatMessage(ComplaintChatMessageDTO complaintChatMessageDTO) {
-        User user = userRepository.findById(complaintChatMessageDTO.getUser().getId()).orElseThrow();
-        Complaint complaint = complaintRepository.findById(complaintChatMessageDTO.getComplaintId()).orElseThrow();
-        ComplaintChatMessage complaintChatMessage = new ComplaintChatMessage();
-        complaintChatMessage.setComplaint(complaint);
-        complaintChatMessage.setChatMessage(complaintChatMessageDTO.getChatMessage());
-        complaintChatMessage.setUser(user);
-        complaintChatMessage.setUser(complaintChatMessage.getUser());
-        complaintChatMessage.setCreatedDate(new Date());
+    public Integer saveComplaintChatMessage(ComplaintChatMessageDTO complaintChatMessageDTO) {
+        User user = userRepository.findById(complaintChatMessageDTO.getUser().getId()).orElseThrow(
+                () -> new DatabaseException(ErrorCode.ERR_027, complaintChatMessageDTO.getUser().getId())
+        );
+        Complaint complaint = complaintRepository.findById(complaintChatMessageDTO.getComplaintId()).orElseThrow(
+                () -> new DatabaseException(ErrorCode.ERR_070, complaintChatMessageDTO.getComplaintId())
+        );
+        ComplaintChatMessage complaintChatMessage =
+                dataMapperService.complaintChatMessageDTOToComplaintChatMessage(complaintChatMessageDTO, user, complaint);
         complaintChatMessageRepository.save(complaintChatMessage);
 
         for (String chatImageBase64 : complaintChatMessageDTO.getChatImagesBase64()) {
@@ -304,59 +307,40 @@ public class DatabaseService {
             complaintChatImage.setChatImageBase64(chatImageBase64);
             complaintChatImageRepository.save(complaintChatImage);
         }
-    }
-
-    private ComplaintDTO getComplaintDTO(Complaint complaint) {
-        User employee = complaint.getUser();
-        return ComplaintDTO.builder()
-                .complaintId(complaint.getId())
-                .buyerId(complaint.getOrder().getUser().getId())
-                .employeeId(employee != null ? employee.getId() : null)
-                .buyerName(complaint.getOrder().getUser().getName())
-                .buyerSurname(complaint.getOrder().getUser().getSurname())
-                .complaintStatus(complaint.getComplaintStatus().getStatus())
-                .employeeName(employee != null ? employee.getName() : null)
-                .employeeSurname(employee != null ? employee.getSurname() : null)
-                .createdDate(complaint.getCreatedDate())
-                .build();
+        return complaintChatMessage.getId();
     }
 
     public List<OrderDTO> findAllOrdersForUser(Integer userId) {
-        User user = userRepository.findById(userId).orElseThrow();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_027, userId));
         List<OrderDTO> orderDTOS = new ArrayList<>();
         for (Order order : user.getOrders()) {
-            UserDTO userDTO = UserDTO.builder()
-                    .id(user.getId())
-                    .name(user.getName())
-                    .surname(user.getSurname())
-                    .phone(user.getPhone())
-                    .email(user.getEmail())
-                    .build();
-            OrderDTO orderDTO = OrderDTO.builder()
-                    .orderId(order.getId())
-                    .user(userDTO)
-                    .orderStatus(order.getOrderStatus().getStatus())
-                    .createdDate(order.getCreatedDate())
-                    .build();
+            OrderDTO orderDTO = dataMapperService.orderToOrderDTO(order, user);
             orderDTOS.add(orderDTO);
         }
         return orderDTOS;
     }
 
     public OrderDetailsDTO findOrderDetailsByOrderId(Integer orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow();
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_081, orderId));
         Complaint complaint = order.getComplaint();
         Set<OrderDetails> ordersDetails = order.getOrdersDetails();
+        if (ordersDetails.isEmpty()) {
+            throw new DataException(ErrorCode.ERR_082, orderId);
+        }
         Set<ItemWithImageDTO> itemWithImageDTOs = new HashSet<>();
+
+        List<ItemImageDTO> itemImageDTOs = new ArrayList<>();
 
         for (OrderDetails orderDetails : ordersDetails) {
             Item item = orderDetails.getItem();
-            ItemWithImageDTO itemWithImageDTO = ItemWithImageDTO.builder()
-                    .itemId(item.getId())
-                    .description(item.getDescription())
-                    .title(item.getTitle())
-                    .price(item.getPrice())
-                    .build();
+            for (ItemImage itemImage : item.getItemImages()) {
+                ItemImageDTO itemImageDTO = dataMapperService.itemImageToItemImageDTO(itemImage);
+                itemImageDTOs.add(itemImageDTO);
+            }
+            ItemWithImageDTO itemWithImageDTO =
+                    dataMapperService.itemToItemWithImageDTO(item, itemImageDTOs);
 
             itemWithImageDTOs.add(itemWithImageDTO);
         }
@@ -365,13 +349,7 @@ public class DatabaseService {
             ComplaintDTO complaintDTO = ComplaintDTO.builder()
                     .complaintId(complaint.getId())
                     .build();
-            return OrderDetailsDTO.builder()
-                    .orderId(order.getId())
-                    .buyerId(order.getUser().getId())
-                    .orderDate(order.getCreatedDate())
-                    .complaint(complaintDTO)
-                    .items(itemWithImageDTOs)
-                    .build();
+            return dataMapperService.orderToOrderDetailsDTO(order, itemWithImageDTOs, complaintDTO);
         } else {
             return OrderDetailsDTO.builder()
                     .orderId(order.getId())
@@ -382,11 +360,19 @@ public class DatabaseService {
     }
 
     public Integer saveNewComplaint(CreateNewComplaintDTO createNewComplaintDTO) {
-        Order order = orderRepository.findById(createNewComplaintDTO.getOrderId()).orElseThrow();
-        User user = userRepository.findById(createNewComplaintDTO.getUserId()).orElseThrow();
+        Order order = orderRepository.findById(createNewComplaintDTO.getOrderId())
+                .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_081, createNewComplaintDTO.getOrderId()));
+        User user = userRepository.findById(createNewComplaintDTO.getUserId())
+                .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_027, createNewComplaintDTO.getUserId()));
         ComplaintStatus complaintStatus = complaintStatusRepository.findComplaintStatusByStatus("OPEN");
+        if (complaintStatus == null) {
+            throw new DatabaseException(ErrorCode.ERR_086, "OPEN");
+        }
         ComplaintCategory complaintCategory = complaintCategoryRepository
                 .findComplaintCategoryByCategory(createNewComplaintDTO.getComplaintCategory());
+        if (complaintCategory == null) {
+            throw new DatabaseException(ErrorCode.ERR_087, createNewComplaintDTO.getComplaintCategory());
+        }
 
         ComplaintChatMessage complaintChatMessage = new ComplaintChatMessage();
         complaintChatMessage.setUser(user);
@@ -414,20 +400,7 @@ public class DatabaseService {
         List<OrderDTO> orderDTOs = new ArrayList<>();
         for (Order order : orderRepository.findAll()) {
             User user = order.getUser();
-            UserDTO userDTO = UserDTO.builder()
-                    .id(user.getId())
-                    .name(user.getName())
-                    .surname(user.getSurname())
-                    .phone(user.getPhone())
-                    .email(user.getEmail())
-                    .build();
-
-            OrderDTO orderDTO = OrderDTO.builder()
-                    .orderId(order.getId())
-                    .orderStatus(order.getOrderStatus().getStatus())
-                    .user(userDTO)
-                    .build();
-
+            OrderDTO orderDTO = dataMapperService.orderToOrderDTO(order, user);
             orderDTOs.add(orderDTO);
         }
 
