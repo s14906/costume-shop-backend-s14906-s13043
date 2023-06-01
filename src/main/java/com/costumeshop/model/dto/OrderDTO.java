@@ -14,5 +14,6 @@ public class OrderDTO {
     private UserDTO user;
     private String orderStatus;
     private Date createdDate;
+    private Double totalPrice;
 
 }

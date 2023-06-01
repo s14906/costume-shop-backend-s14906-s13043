@@ -335,8 +335,14 @@ public class DataMapperService {
                 .email(user.getEmail())
                 .build();
 
+        Double totalPrice = order.getOrdersDetails().stream()
+                .mapToDouble(orderDetails -> orderDetails.getItem().getPrice())
+                .sum();
+
         return OrderDTO.builder()
                 .orderId(order.getId())
+                .createdDate(order.getCreatedDate())
+                .totalPrice(totalPrice)
                 .orderStatus(order.getOrderStatus().getStatus())
                 .user(userDTO)
                 .build();
