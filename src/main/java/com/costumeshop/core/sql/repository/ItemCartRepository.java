@@ -13,4 +13,5 @@ import java.util.List;
 public interface ItemCartRepository extends CrudRepository<ItemCart, Integer> {
     List<ItemCart> findAllByUserId(Integer userId);
     List<ItemCart> findAllByUserAndItemAndItemSize(User user, Item item, ItemSize itemSize);
+    ItemCart findByUserIdAndItemId(Integer userId, Integer cartItemId);
 }

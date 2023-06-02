@@ -196,6 +196,20 @@ public class DatabaseService {
         return cartItemDTOs;
     }
 
+    public void deleteCartItemForUser(Integer itemCartId) {
+        ItemCart itemCart = itemCartRepository.findById(itemCartId)
+                .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_095, itemCartId));
+        itemCartRepository.delete(itemCart);
+    }
+
+    public void deleteCartItemsForUser(Integer userId) {
+        if (userId == null) {
+            throw new DataException(ErrorCode.ERR_017);
+        }
+        List<ItemCart> itemCarts = itemCartRepository.findAllByUserId(userId);
+        itemCartRepository.deleteAll(itemCarts);
+    }
+
     public Integer insertNewAddressForUser(AddressDTO addressDTO) {
         try {
             if (addressDTO == null) {

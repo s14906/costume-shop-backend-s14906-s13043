@@ -16,14 +16,11 @@ public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
     private String street;
-
     private String postalCode;
-
     private String city;
-
     private String flatNumber;
+    private String notes;
 
     @JsonBackReference
     @ManyToOne

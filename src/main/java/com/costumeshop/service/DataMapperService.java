@@ -242,6 +242,7 @@ public class DataMapperService {
                 .flatNumber(address.getFlatNumber())
                 .postalCode(address.getPostalCode())
                 .street(address.getStreet())
+                .notes(address.getNotes())
                 .build();
     }
 
@@ -292,6 +293,7 @@ public class DataMapperService {
 
     public CartItemDTO cartItemToCartItemDTO(ItemCart itemCart, Integer userId) {
         return CartItemDTO.builder()
+                .cartItemId(itemCart.getId())
                 .itemsAmount(itemCart.getItemAmount())
                 .size(itemCart.getItemSize().getSize())
                 .price(itemCart.getItem().getPrice())

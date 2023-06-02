@@ -51,7 +51,11 @@ public enum InfoCode implements BasicMessageCode {
     INFO_041("User: %1 tries to access the endpoint: %2."),
     INFO_042("You do not have the authorization to access this resource!"),
     INFO_043("All items retrieved by search text: %1. Found %2 items."),
-    INFO_044("Items with images retrieved by search!");
+    INFO_044("Items with images retrieved by search!"),
+    INFO_045("Cart items removed for user ID: %1."),
+    INFO_046("Items removed from cart!"),
+    INFO_047("Cart item ID: %1 deleted for user ID: %2."),
+    INFO_048("Item removed from cart!");
 
     private String message;
 

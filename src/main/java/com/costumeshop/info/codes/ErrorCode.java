@@ -99,7 +99,10 @@ public enum ErrorCode implements BasicMessageCode {
     ERR_089("Your token has expired. Please log in again."),
     ERR_090("JWT token has expired for user: %1."),
     ERR_091("Unauthorized user has attempted to access the previously logged endpoint."),
-    ERR_092("Error occurred when retrieving items by search text: %1.");
+    ERR_092("Error occurred when retrieving items by search text: %1."),
+    ERR_093("Error occurred when removing cart items for user ID: %1."),
+    ERR_094("Failed to remove items from cart!"),
+    ERR_095("Could not find cart item ID: %1.");
 
     private String message;
 

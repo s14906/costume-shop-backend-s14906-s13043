@@ -14,4 +14,5 @@ public class AddressDTO {
     private String postalCode;
     private String city;
     private String flatNumber;
+    private String notes;
 }
