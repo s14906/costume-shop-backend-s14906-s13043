@@ -95,7 +95,10 @@ public enum ErrorCode implements BasicMessageCode {
     ERR_085("Failed to retrieve order details for order ID: %1."),
     ERR_086("Failed to retrieve complaint status for status: %1."),
     ERR_087("Failed to retrieve complaint category for category: %1."),
-    ERR_088("Error occurred when creating a new complaint!");
+    ERR_088("Error occurred when creating a new complaint!"),
+    ERR_089("Your token has expired. Please log in again."),
+    ERR_090("JWT token has expired for user: %1."),
+    ERR_091("Unauthorized user has attempted to access the previously logged endpoint.");
 
     private String message;
 

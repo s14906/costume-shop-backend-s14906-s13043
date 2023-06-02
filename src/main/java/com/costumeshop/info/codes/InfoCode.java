@@ -46,7 +46,10 @@ public enum InfoCode implements BasicMessageCode {
     INFO_036("Retrieved orders for user ID: %1."),
     INFO_037("Retrieved order details for order ID: %1."),
     INFO_038("New complaint created successfully!"),
-    INFO_039("New complaint created with ID: %1.");
+    INFO_039("New complaint created with ID: %1."),
+    INFO_040("JWT token parsed correctly for username: %1."),
+    INFO_041("User: %1 tries to access the endpoint: %2."),
+    INFO_042("You do not have the authorization to access this resource!");
 
 
     private String message;

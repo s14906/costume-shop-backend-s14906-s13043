@@ -29,6 +29,13 @@ public class CodeMessageUtils {
                 .replace("%2", String.valueOf(secondOption));
     }
 
+    public static String getMessage(BasicMessageCode code, String firstOption, String secondOption) {
+        String baseMessage = code.name() + ": " + code.getMessage();
+        return baseMessage
+                .replace("%1", firstOption)
+                .replace("%2", secondOption);
+    }
+
     public static String getMessage(BasicMessageCode code, Throwable cause) {
         return code.name() + ": " + code.getMessage() + " " + cause.getMessage();
     }
@@ -38,12 +45,22 @@ public class CodeMessageUtils {
         return baseMessage.replace("%1", String.valueOf(option));
     }
 
+    private static String getMessage(BasicMessageCode code, String option, Throwable cause) {
+        String baseMessage = code.name() + ": " + code.getMessage() + " " + cause.getMessage();
+        return baseMessage.replace("%1", option);
+    }
+
     public static void logMessageAndPrintStackTrace(BasicMessageCode code, Exception e, Logger logger) {
         logger.error(CodeMessageUtils.getMessage(code, e));
         e.printStackTrace();
     }
 
     public static void logMessageAndPrintStackTrace(BasicMessageCode code, Integer option, Exception e, Logger logger) {
+        logger.error(CodeMessageUtils.getMessage(code, option, e));
+        e.printStackTrace();
+    }
+
+    public static void logMessageAndPrintStackTrace(BasicMessageCode code, String option, Exception e, Logger logger) {
         logger.error(CodeMessageUtils.getMessage(code, option, e));
         e.printStackTrace();
     }
@@ -60,6 +77,10 @@ public class CodeMessageUtils {
     }
 
     public static void logMessage(BasicMessageCode code, Integer firstOption, Integer secondOption, Logger logger) {
+        logger.info(CodeMessageUtils.getMessage(code, firstOption, secondOption));
+    }
+
+    public static void logMessage(BasicMessageCode code, String firstOption, String secondOption, Logger logger) {
         logger.info(CodeMessageUtils.getMessage(code, firstOption, secondOption));
     }
 }

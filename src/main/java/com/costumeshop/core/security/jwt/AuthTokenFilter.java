@@ -1,6 +1,10 @@
 package com.costumeshop.core.security.jwt;
 
+import com.costumeshop.info.codes.ErrorCode;
+import com.costumeshop.info.codes.InfoCode;
+import com.costumeshop.info.utils.CodeMessageUtils;
 import com.costumeshop.service.ShopUserDetailsService;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,11 +35,13 @@ public class AuthTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        String username = "";
         try {
             String jwt = parseJwt(request);
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
-                logger.info("JWT token parsed correctly.");
-                String username = jwtUtils.getUserNameFromJwtToken(jwt);
+                username = jwtUtils.getUserNameFromJwtToken(jwt);
+                CodeMessageUtils.logMessage(InfoCode.INFO_040, username, logger);
+                CodeMessageUtils.logMessage(InfoCode.INFO_041, username, request.getRequestURI(), logger);
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
@@ -44,9 +50,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-        } catch (Exception e) {
-            logger.error("An error occurred during JWT authentication: " + e.getMessage());
+        } catch (JwtException e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_090, username, e, logger);
             response.setStatus(HttpStatus.FORBIDDEN.value());
+            response.setHeader("JWT-Message", CodeMessageUtils.getMessage(ErrorCode.ERR_089));
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         }
 

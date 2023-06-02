@@ -21,7 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class WebSecurityConfig {
-
+    private final static String EMPLOYEE = "EMPLOYEE";
     private final ShopUserDetailsService userDetailsService;
     private final AuthEntryPointJwt unauthorizedHandler;
     private final AuthenticationConfiguration configuration;
@@ -38,6 +38,9 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/items/**").permitAll()
                         .requestMatchers("/api/users").permitAll()
                         .requestMatchers("/api/verification").permitAll()
+                        .requestMatchers("/api/complaints").hasAuthority(EMPLOYEE)
+                        .requestMatchers("/api/orders").hasAuthority(EMPLOYEE)
+
                         .anyRequest().authenticated()
                 );
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

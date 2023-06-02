@@ -1,5 +1,8 @@
 package com.costumeshop.core.security.jwt;
 
+import com.costumeshop.info.codes.ErrorCode;
+import com.costumeshop.info.codes.InfoCode;
+import com.costumeshop.info.utils.CodeMessageUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -18,7 +21,9 @@ public class AuthEntryPointJwt implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException) throws IOException {
-        logger.error("Unauthorized error: {}", authException.getMessage());
+
+        CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_091, authException, logger);
+        response.setHeader("Unauthorized-Error", CodeMessageUtils.getMessage(InfoCode.INFO_042));
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Error: Unauthorized");
     }
 
