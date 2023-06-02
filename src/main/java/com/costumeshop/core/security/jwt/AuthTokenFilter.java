@@ -53,7 +53,7 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         } catch (JwtException e) {
             CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_090, username, e, logger);
             response.setStatus(HttpStatus.FORBIDDEN.value());
-            response.setHeader("JWT-Message", CodeMessageUtils.getMessage(ErrorCode.ERR_089));
+            response.setHeader("JWT-Error", CodeMessageUtils.getMessage(ErrorCode.ERR_089));
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         }
 
