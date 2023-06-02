@@ -5,6 +5,7 @@ import com.costumeshop.info.codes.InfoCode;
 import com.costumeshop.info.utils.CodeMessageUtils;
 import com.costumeshop.model.dto.ComplaintChatMessageDTO;
 import com.costumeshop.model.dto.ComplaintDTO;
+import com.costumeshop.model.dto.CreateNewComplaintDTO;
 import com.costumeshop.model.response.ComplaintChatMessageResponse;
 import com.costumeshop.model.response.ComplaintResponse;
 import com.costumeshop.model.response.SimpleResponse;
@@ -133,6 +134,28 @@ public class ComplaintController {
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
                     .message(CodeMessageUtils.getMessage(ErrorCode.ERR_078))
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping(path = "/complaints/create")
+    public @ResponseBody ResponseEntity<?> createNewComplaint(
+            @RequestBody CreateNewComplaintDTO createNewComplaintDTO) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            Integer complaintId = databaseService.saveNewComplaint(createNewComplaintDTO);
+            CodeMessageUtils.logMessage(InfoCode.INFO_039, complaintId, logger);
+            return new ResponseEntity<>(ComplaintResponse.builder()
+                    .success(true)
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_038))
+                    .complaintId(complaintId)
+                    .build(), responseHeaders, HttpStatus.OK);
+        } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_088, e, logger);
+            return new ResponseEntity<>(ComplaintResponse.builder()
+                    .success(false)
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_088))
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
