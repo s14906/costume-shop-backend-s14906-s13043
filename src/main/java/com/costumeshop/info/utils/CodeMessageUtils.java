@@ -8,46 +8,30 @@ public class CodeMessageUtils {
         return code.name() + ": " + code.getMessage();
     }
 
-    public static String getMessage(String message, Integer option) {
-        return message.replace("%1", String.valueOf(option));
+    public static String getMessage(Object message, Object option) {
+        return String.valueOf(message)
+                .replace("%1", String.valueOf(option));
     }
 
-    public static String getMessage(BasicMessageCode code, Integer option) {
+    public static String getMessage(BasicMessageCode code, Object option) {
         String baseMessage = code.name() + ": " + code.getMessage();
         return baseMessage.replace("%1", String.valueOf(option));
-    }
-
-    public static String getMessage(BasicMessageCode code, String option) {
-        String baseMessage = code.name() + ": " + code.getMessage();
-        return baseMessage.replace("%1", option);
-    }
-
-    public static String getMessage(BasicMessageCode code, Integer firstOption, Integer secondOption) {
-        String baseMessage = code.name() + ": " + code.getMessage();
-        return baseMessage
-                .replace("%1", String.valueOf(firstOption))
-                .replace("%2", String.valueOf(secondOption));
-    }
-
-    public static String getMessage(BasicMessageCode code, String firstOption, String secondOption) {
-        String baseMessage = code.name() + ": " + code.getMessage();
-        return baseMessage
-                .replace("%1", firstOption)
-                .replace("%2", secondOption);
     }
 
     public static String getMessage(BasicMessageCode code, Throwable cause) {
         return code.name() + ": " + code.getMessage() + " " + cause.getMessage();
     }
 
-    public static String getMessage(BasicMessageCode code, Integer option, Throwable cause) {
+    public static String getMessage(BasicMessageCode code, Object option, Throwable cause) {
         String baseMessage = code.name() + ": " + code.getMessage() + " " + cause.getMessage();
         return baseMessage.replace("%1", String.valueOf(option));
     }
 
-    private static String getMessage(BasicMessageCode code, String option, Throwable cause) {
-        String baseMessage = code.name() + ": " + code.getMessage() + " " + cause.getMessage();
-        return baseMessage.replace("%1", option);
+    public static String getMessage(BasicMessageCode code, Object firstOption, Object secondOption) {
+        String baseMessage = code.name() + ": " + code.getMessage();
+        return baseMessage
+                .replace("%1", String.valueOf(firstOption))
+                .replace("%2", String.valueOf(secondOption));
     }
 
     public static void logMessageAndPrintStackTrace(BasicMessageCode code, Exception e, Logger logger) {
@@ -72,15 +56,13 @@ public class CodeMessageUtils {
     public static void logMessage(BasicMessageCode code, Integer option, Logger logger) {
         logger.info(CodeMessageUtils.getMessage(code, option));
     }
+
     public static void logMessage(BasicMessageCode code, String option, Logger logger) {
         logger.info(CodeMessageUtils.getMessage(code, option));
     }
 
-    public static void logMessage(BasicMessageCode code, Integer firstOption, Integer secondOption, Logger logger) {
+    public static void logMessage(BasicMessageCode code, Object firstOption, Object secondOption, Logger logger) {
         logger.info(CodeMessageUtils.getMessage(code, firstOption, secondOption));
     }
 
-    public static void logMessage(BasicMessageCode code, String firstOption, String secondOption, Logger logger) {
-        logger.info(CodeMessageUtils.getMessage(code, firstOption, secondOption));
-    }
 }

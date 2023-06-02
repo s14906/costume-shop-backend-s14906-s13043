@@ -118,13 +118,15 @@ public class DatabaseService {
     public List<ItemWithImageDTO> findAllItemsWithImages() {
         List<ItemWithImageDTO> itemWithImageDTOs = new ArrayList<>();
         for (Item item : itemRepository.findAll()) {
-            List<ItemImageDTO> itemImageDTOs = new ArrayList<>();
-            for (ItemImage itemImage : item.getItemImages()) {
-                ItemImageDTO itemImageDTO = dataMapperService.itemImageToItemImageDTO(itemImage);
-                itemImageDTOs.add(itemImageDTO);
-            }
-            ItemWithImageDTO itemWithImageDTO = dataMapperService.itemToItemWithImageDTO(item, itemImageDTOs);
-            itemWithImageDTOs.add(itemWithImageDTO);
+            dataMapperService.addItemToItemWithImageDTOList(itemWithImageDTOs, item);
+        }
+        return itemWithImageDTOs;
+    }
+
+    public List<ItemWithImageDTO> findAllItemsWithImagesBySearchText(String searchText) {
+        List<ItemWithImageDTO> itemWithImageDTOs = new ArrayList<>();
+        for (Item item : itemRepository.findAllByTitleOrDescription(searchText)) {
+            dataMapperService.addItemToItemWithImageDTOList(itemWithImageDTOs, item);
         }
         return itemWithImageDTOs;
     }

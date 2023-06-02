@@ -51,7 +51,27 @@ public class ItemController {
                     .message(CodeMessageUtils.getMessage(ErrorCode.ERR_051))
                     .build(), responseHeaders, HttpStatus.OK);
         }
+    }
 
+    @GetMapping(path = "/items/{searchText}")
+    public @ResponseBody ResponseEntity<?> getAllItemsWithImagesBySearchText(@PathVariable String searchText) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            List<ItemWithImageDTO> itemWithImageDTOs = databaseService.findAllItemsWithImagesBySearchText(searchText);
+            CodeMessageUtils.logMessage(InfoCode.INFO_043, searchText, itemWithImageDTOs.size(), logger);
+            return new ResponseEntity<>(ItemResponse.builder()
+                    .success(true)
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_044))
+                    .itemsWithImages(itemWithImageDTOs)
+                    .build(), responseHeaders, HttpStatus.OK);
+        } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_092, e, logger);
+            return new ResponseEntity<>(ItemResponse.builder()
+                    .success(false)
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_051))
+                    .build(), responseHeaders, HttpStatus.OK);
+        }
     }
 
     @GetMapping(path = "/items/sizes")

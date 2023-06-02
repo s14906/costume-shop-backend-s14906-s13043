@@ -98,7 +98,8 @@ public enum ErrorCode implements BasicMessageCode {
     ERR_088("Error occurred when creating a new complaint!"),
     ERR_089("Your token has expired. Please log in again."),
     ERR_090("JWT token has expired for user: %1."),
-    ERR_091("Unauthorized user has attempted to access the previously logged endpoint.");
+    ERR_091("Unauthorized user has attempted to access the previously logged endpoint."),
+    ERR_092("Error occurred when retrieving items by search text: %1.");
 
     private String message;
 
