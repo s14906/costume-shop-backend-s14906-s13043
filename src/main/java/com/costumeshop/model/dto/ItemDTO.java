@@ -10,11 +10,12 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class ItemWithImageDTO {
+public class ItemDTO {
     private Integer itemId;
     private String title;
     private String description;
     private BigDecimal price;
     private List<ItemImageDTO> itemImages;
+    private Integer quantity;
 
 }

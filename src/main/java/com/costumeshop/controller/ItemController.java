@@ -5,7 +5,7 @@ import com.costumeshop.core.sql.entity.ItemSize;
 import com.costumeshop.info.codes.ErrorCode;
 import com.costumeshop.info.codes.InfoCode;
 import com.costumeshop.info.utils.CodeMessageUtils;
-import com.costumeshop.model.dto.ItemWithImageDTO;
+import com.costumeshop.model.dto.ItemDTO;
 import com.costumeshop.model.response.ItemResponse;
 import com.costumeshop.service.DatabaseService;
 import lombok.RequiredArgsConstructor;
@@ -32,13 +32,13 @@ public class ItemController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            List<ItemWithImageDTO> itemWithImageDTOs = databaseService.findAllItemsWithImages();
+            List<ItemDTO> itemDTOs = databaseService.findAllItemsWithImages();
 
             CodeMessageUtils.logMessage(InfoCode.INFO_011, logger);
             return new ResponseEntity<>(ItemResponse.builder()
                     .success(true)
                     .message(CodeMessageUtils.getMessage(InfoCode.INFO_011))
-                    .itemsWithImages(itemWithImageDTOs)
+                    .itemsWithImages(itemDTOs)
                     .build(), responseHeaders, HttpStatus.OK);
         } catch (Exception e) {
             CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_051, e, logger);
@@ -54,12 +54,12 @@ public class ItemController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            List<ItemWithImageDTO> itemWithImageDTOs = databaseService.findAllItemsWithImagesBySearchText(searchText);
-            CodeMessageUtils.logMessage(InfoCode.INFO_043, searchText, itemWithImageDTOs.size(), logger);
+            List<ItemDTO> itemDTOs = databaseService.findAllItemsWithImagesBySearchText(searchText);
+            CodeMessageUtils.logMessage(InfoCode.INFO_043, searchText, itemDTOs.size(), logger);
             return new ResponseEntity<>(ItemResponse.builder()
                     .success(true)
                     .message(CodeMessageUtils.getMessage(InfoCode.INFO_044))
-                    .itemsWithImages(itemWithImageDTOs)
+                    .itemsWithImages(itemDTOs)
                     .build(), responseHeaders, HttpStatus.OK);
         } catch (Exception e) {
             CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_092, e, logger);

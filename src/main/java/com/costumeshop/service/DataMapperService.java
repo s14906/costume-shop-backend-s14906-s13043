@@ -263,7 +263,7 @@ public class DataMapperService {
                 .build();
     }
 
-    public ItemWithImageDTO itemToItemWithImageDTO(Item item, List<ItemImageDTO> itemImageDTOs) {
+    public ItemDTO itemToItemDTO(Item item, List<ItemImageDTO> itemImageDTOs) {
         if (itemImageDTOs.isEmpty()) {
             throw new DataException(ErrorCode.ERR_045);
         }
@@ -283,7 +283,7 @@ public class DataMapperService {
             throw new DataException(ErrorCode.ERR_050);
         }
 
-        return ItemWithImageDTO.builder()
+        return ItemDTO.builder()
                 .itemId(item.getId())
                 .itemImages(itemImageDTOs)
                 .description(item.getDescription())
@@ -293,7 +293,7 @@ public class DataMapperService {
     }
 
     public CartItemDTO cartItemToCartItemDTO(ItemCart itemCart, Integer userId) {
-        List<ItemWithImageDTO> itemWithImageDTOs = new ArrayList<>();
+        List<ItemDTO> itemDTOs = new ArrayList<>();
         Item item = itemCart.getItem();
 
         if (item == null) {
@@ -301,18 +301,18 @@ public class DataMapperService {
         }
 
         for (int i = 0; i < itemCart.getItemAmount(); i++) {
-            ItemWithImageDTO itemWithImageDTO = ItemWithImageDTO.builder()
+            ItemDTO itemDTO = ItemDTO.builder()
                     .itemId(item.getId())
                     .title(item.getTitle())
                     .description(item.getDescription())
                     .price(item.getPrice())
                     .build();
-            itemWithImageDTOs.add(itemWithImageDTO);
+            itemDTOs.add(itemDTO);
         }
 
         return CartItemDTO.builder()
                 .cartItemId(itemCart.getId())
-                .items(itemWithImageDTOs)
+                .items(itemDTOs)
                 .size(itemCart.getItemSize().getSize())
                 .price(itemCart.getItem().getPrice())
                 .title(itemCart.getItem().getTitle())
@@ -466,7 +466,7 @@ public class DataMapperService {
         return complaintChatMessage;
     }
 
-    public OrderDetailsDTO orderToOrderDetailsDTO(Order order, Set<ItemWithImageDTO> itemWithImageDTOs,
+    public OrderDetailsDTO orderToOrderDetailsDTO(Order order, Set<ItemDTO> itemDTOs,
                                                   ComplaintDTO complaintDTO) {
 
         if (order == null) {
@@ -487,18 +487,18 @@ public class DataMapperService {
                 .buyerId(order.getUser().getId())
                 .orderDate(order.getCreatedDate())
                 .complaint(complaintDTO)
-                .items(itemWithImageDTOs)
+                .items(itemDTOs)
                 .build();
     }
 
-    public void addItemToItemWithImageDTOList(List<ItemWithImageDTO> itemWithImageDTOs, Item item) {
+    public void addItemToItemDTOList(List<ItemDTO> itemDTOs, Item item) {
         List<ItemImageDTO> itemImageDTOs = new ArrayList<>();
         for (ItemImage itemImage : item.getItemImages()) {
             ItemImageDTO itemImageDTO = itemImageToItemImageDTO(itemImage);
             itemImageDTOs.add(itemImageDTO);
         }
-        ItemWithImageDTO itemWithImageDTO = itemToItemWithImageDTO(item, itemImageDTOs);
-        itemWithImageDTOs.add(itemWithImageDTO);
+        ItemDTO itemDTO = itemToItemDTO(item, itemImageDTOs);
+        itemDTOs.add(itemDTO);
     }
 
     public Order orderDTOToOrder(User user, Address address, OrderStatus orderStatus) {

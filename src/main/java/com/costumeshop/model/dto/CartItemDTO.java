@@ -13,7 +13,7 @@ import java.util.List;
 public class CartItemDTO {
     private Integer cartItemId;
     private String title;
-    private List<ItemWithImageDTO> items;
+    private List<ItemDTO> items;
     private BigDecimal price;
     private String size;
 

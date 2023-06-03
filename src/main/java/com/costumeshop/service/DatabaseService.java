@@ -119,20 +119,20 @@ public class DatabaseService {
                 new DatabaseException(ErrorCode.ERR_053, id));
     }
 
-    public List<ItemWithImageDTO> findAllItemsWithImages() {
-        List<ItemWithImageDTO> itemWithImageDTOs = new ArrayList<>();
+    public List<ItemDTO> findAllItemsWithImages() {
+        List<ItemDTO> itemDTOs = new ArrayList<>();
         for (Item item : itemRepository.findAll()) {
-            dataMapperService.addItemToItemWithImageDTOList(itemWithImageDTOs, item);
+            dataMapperService.addItemToItemDTOList(itemDTOs, item);
         }
-        return itemWithImageDTOs;
+        return itemDTOs;
     }
 
-    public List<ItemWithImageDTO> findAllItemsWithImagesBySearchText(String searchText) {
-        List<ItemWithImageDTO> itemWithImageDTOs = new ArrayList<>();
+    public List<ItemDTO> findAllItemsWithImagesBySearchText(String searchText) {
+        List<ItemDTO> itemDTOs = new ArrayList<>();
         for (Item item : itemRepository.findAllByTitleOrDescription(searchText)) {
-            dataMapperService.addItemToItemWithImageDTOList(itemWithImageDTOs, item);
+            dataMapperService.addItemToItemDTOList(itemDTOs, item);
         }
-        return itemWithImageDTOs;
+        return itemDTOs;
     }
 
     public List<ComplaintDTO> findAllComplaints() {
@@ -333,12 +333,12 @@ public class DatabaseService {
     public List<OrderDTO> findAllOrdersForUser(Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_027, userId));
-        List<OrderDTO> orderDTOS = new ArrayList<>();
+        List<OrderDTO> orderDTOs = new ArrayList<>();
         for (Order order : user.getOrders()) {
             OrderDTO orderDTO = dataMapperService.orderToOrderDTO(order, user);
-            orderDTOS.add(orderDTO);
+            orderDTOs.add(orderDTO);
         }
-        return orderDTOS;
+        return orderDTOs;
     }
 
     public OrderDetailsDTO findOrderDetailsByOrderId(Integer orderId) {
@@ -349,7 +349,7 @@ public class DatabaseService {
         if (ordersDetails.isEmpty()) {
             throw new DataException(ErrorCode.ERR_082, orderId);
         }
-        Set<ItemWithImageDTO> itemWithImageDTOs = new HashSet<>();
+        Set<ItemDTO> itemDTOs = new HashSet<>();
 
         List<ItemImageDTO> itemImageDTOs = new ArrayList<>();
 
@@ -359,22 +359,22 @@ public class DatabaseService {
                 ItemImageDTO itemImageDTO = dataMapperService.itemImageToItemImageDTO(itemImage);
                 itemImageDTOs.add(itemImageDTO);
             }
-            ItemWithImageDTO itemWithImageDTO =
-                    dataMapperService.itemToItemWithImageDTO(item, itemImageDTOs);
+            ItemDTO itemDTO =
+                    dataMapperService.itemToItemDTO(item, itemImageDTOs);
 
-            itemWithImageDTOs.add(itemWithImageDTO);
+            itemDTOs.add(itemDTO);
         }
 
         if (complaint != null) {
             ComplaintDTO complaintDTO = ComplaintDTO.builder()
                     .complaintId(complaint.getId())
                     .build();
-            return dataMapperService.orderToOrderDetailsDTO(order, itemWithImageDTOs, complaintDTO);
+            return dataMapperService.orderToOrderDetailsDTO(order, itemDTOs, complaintDTO);
         } else {
             return OrderDetailsDTO.builder()
                     .orderId(order.getId())
                     .orderDate(order.getCreatedDate())
-                    .items(itemWithImageDTOs)
+                    .items(itemDTOs)
                     .buyerId(order.getUser().getId())
                     .build();
         }
