@@ -293,6 +293,42 @@ public class DataMapperService {
                 .build();
     }
 
+    public Item itemDTOToItem(ItemDTO itemDTO) {
+        if (itemDTO == null) {
+            throw new DataException(ErrorCode.ERR_046);
+        }
+        if (itemDTO.getItemId() == null) {
+            throw new DataException(ErrorCode.ERR_047);
+        }
+        String description = itemDTO.getDescription();
+        if (description == null || description.isEmpty() || description.isBlank()) {
+            throw new DataException(ErrorCode.ERR_048);
+        }
+        if (itemDTO.getPrice() == null) {
+            throw new DataException(ErrorCode.ERR_049);
+        }
+        String title = itemDTO.getTitle();
+        if (title == null || title.isEmpty() || title.isBlank()) {
+            throw new DataException(ErrorCode.ERR_050);
+        }
+        if (itemDTO.getQuantity() == null) {
+            throw new DataException(ErrorCode.ERR_107);
+        }
+        List<ItemImageDTO> itemImages = itemDTO.getItemImages();
+        if (itemImages == null || itemImages.isEmpty()) {
+            throw new DataException(ErrorCode.ERR_042);
+        }
+
+        Item item = new Item();
+        item.setTitle(itemDTO.getTitle());
+        item.setItemSetId(1);
+        item.setDescription(itemDTO.getDescription());
+        item.setCategoryId(1);
+        item.setPrice(itemDTO.getPrice());
+        item.setQuantity(itemDTO.getQuantity());
+        return item;
+    }
+
     public CartItemDTO cartItemToCartItemDTO(ItemCart itemCart, Integer userId) {
         List<ItemDTO> itemDTOs = new ArrayList<>();
         Item item = itemCart.getItem();

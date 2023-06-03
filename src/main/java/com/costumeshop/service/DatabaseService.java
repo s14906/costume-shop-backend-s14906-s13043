@@ -29,6 +29,7 @@ public class DatabaseService {
     private final UserRoleRepository userRoleRepository;
     private final AddressRepository addressRepository;
     private final ItemRepository itemRepository;
+    private final ItemImageRepository itemImageRepository;
     private final ItemSizeRepository itemSizeRepository;
     private final ItemCartRepository itemCartRepository;
     private final ItemColorRepository itemColorRepository;
@@ -117,6 +118,42 @@ public class DatabaseService {
     public Item findItemById(Integer id) {
         return itemRepository.findById(id).orElseThrow(() ->
                 new DatabaseException(ErrorCode.ERR_053, id));
+    }
+
+    public void deleteItemById(Integer itemId) {
+        if (itemId == null) {
+            throw new DataException(ErrorCode.ERR_047);
+        }
+        Item item = findItemById(itemId);
+        itemRepository.delete(item);
+    }
+
+    public ItemDTO getItemDTOById(Integer itemId) {
+        if (itemId == null) {
+            throw new DataException(ErrorCode.ERR_047);
+        }
+        Item item = findItemById(itemId);
+        Set<ItemImage> itemImages = item.getItemImages();
+        List<ItemImageDTO> itemImageDTOs = new ArrayList<>();
+        itemImages.forEach(itemImage -> {
+            ItemImageDTO itemImageDTO = dataMapperService.itemImageToItemImageDTO(itemImage);
+            itemImageDTOs.add(itemImageDTO);
+        });
+        return dataMapperService.itemToItemDTO(item, itemImageDTOs);
+    }
+
+
+    public Integer insertItem(ItemDTO itemDTO) {
+        Item item = dataMapperService.itemDTOToItem(itemDTO);
+        itemRepository.save(item);
+
+        itemDTO.getItemImages().forEach(itemImageDTO -> {
+            ItemImage itemImage = new ItemImage();
+            itemImage.setItem(item);
+            itemImage.setImageBase64(itemImageDTO.getImageBase64());
+            itemImageRepository.save(itemImage);
+        });
+        return item.getId();
     }
 
     public List<ItemDTO> findAllItemsWithImages() {

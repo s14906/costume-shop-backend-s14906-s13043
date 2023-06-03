@@ -9,13 +9,13 @@ import java.util.List;
 
 @Getter
 public class ItemResponse extends AbstractResponse {
-    private final List<ItemDTO> itemsWithImages;
+    private final List<ItemDTO> items;
     private final List<ItemSize> itemSizes;
 
     @Builder
-    public ItemResponse(boolean success, String message, List<ItemDTO> itemsWithImages, List<ItemSize> itemSizes) {
+    public ItemResponse(boolean success, String message, List<ItemDTO> items, List<ItemSize> itemSizes) {
         super(success, message);
-        this.itemsWithImages = itemsWithImages;
+        this.items = items;
         this.itemSizes = itemSizes;
     }
 }

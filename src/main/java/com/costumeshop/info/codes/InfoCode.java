@@ -59,7 +59,11 @@ public enum InfoCode implements BasicMessageCode {
     INFO_049("New order has been created with ID: %1."),
     INFO_050("New order has been created."),
     INFO_051("New payment transaction has been created with ID: %1 for user ID: %2."),
-    INFO_052("New payment transaction has been created.");
+    INFO_052("New payment transaction has been created."),
+    INFO_053("Removed item with ID: %1."),
+    INFO_054("Item has been deleted!"),
+    INFO_055("New item has been inserted with ID: %1."),
+    INFO_056("New item has been inserted.");
 
     private String message;
 

@@ -111,7 +111,11 @@ public enum ErrorCode implements BasicMessageCode {
     ERR_101("Error occurred when saving a new payment transaction."),
     ERR_102("Could not find payment status for status: %1."),
     ERR_103("Cart items are null!"),
-    ERR_104("Could not find item size by size: %1.");
+    ERR_104("Could not find item size by size: %1."),
+    ERR_105("Error occurred while removing the item with ID: %1."),
+    ERR_106("Error occurred while removing the item."),
+    ERR_107("Item quantity is null!"),
+    ERR_108("Error occurred while inserting a new item.");
 
     private String message;
 
