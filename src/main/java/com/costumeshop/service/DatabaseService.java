@@ -2,9 +2,9 @@ package com.costumeshop.service;
 
 import com.costumeshop.core.sql.entity.*;
 import com.costumeshop.core.sql.repository.*;
+import com.costumeshop.exception.DataException;
 import com.costumeshop.exception.DatabaseException;
 import com.costumeshop.info.codes.ErrorCode;
-import com.costumeshop.exception.DataException;
 import com.costumeshop.info.codes.InfoCode;
 import com.costumeshop.info.utils.CodeMessageUtils;
 import com.costumeshop.model.dto.*;
@@ -38,6 +38,10 @@ public class DatabaseService {
     private final ComplaintStatusRepository complaintStatusRepository;
     private final ComplaintCategoryRepository complaintCategoryRepository;
     private final OrderRepository orderRepository;
+    private final OrderDetailsRepository orderDetailsRepository;
+    private final PaymentTransactionRepository paymentTransactionRepository;
+    private final PaymentStatusRepository paymentStatusRepository;
+    private final OrderStatusRepository orderStatusRepository;
     private final MailService mailService;
     private final PasswordService passwordService;
     private final DataMapperService dataMapperService;
@@ -308,11 +312,11 @@ public class DatabaseService {
 
     public Integer saveComplaintChatMessage(ComplaintChatMessageDTO complaintChatMessageDTO) {
         User user = userRepository.findById(complaintChatMessageDTO.getUser().getId()).orElseThrow(
-                () -> new DatabaseException(ErrorCode.ERR_027, complaintChatMessageDTO.getUser().getId())
-        );
+                () -> new DatabaseException(ErrorCode.ERR_027, complaintChatMessageDTO.getUser().getId()));
+
         Complaint complaint = complaintRepository.findById(complaintChatMessageDTO.getComplaintId()).orElseThrow(
-                () -> new DatabaseException(ErrorCode.ERR_070, complaintChatMessageDTO.getComplaintId())
-        );
+                () -> new DatabaseException(ErrorCode.ERR_070, complaintChatMessageDTO.getComplaintId()));
+
         ComplaintChatMessage complaintChatMessage =
                 dataMapperService.complaintChatMessageDTOToComplaintChatMessage(complaintChatMessageDTO, user, complaint);
         complaintChatMessageRepository.save(complaintChatMessage);
@@ -371,6 +375,7 @@ public class DatabaseService {
                     .orderId(order.getId())
                     .orderDate(order.getCreatedDate())
                     .items(itemWithImageDTOs)
+                    .buyerId(order.getUser().getId())
                     .build();
         }
     }
@@ -405,6 +410,7 @@ public class DatabaseService {
         complaint.setComplaintChatMessages(Set.of(complaintChatMessage));
         complaintChatMessage.setComplaint(complaint);
         order.setComplaint(complaint);
+        order.setLastModifiedDate(new Date());
 
         complaintRepository.save(complaint);
         complaintChatMessageRepository.save(complaintChatMessage);
@@ -421,5 +427,63 @@ public class DatabaseService {
         }
 
         return orderDTOs;
+    }
+
+    public Order saveNewOrder(CartConfirmationDTO cartConfirmationDTO) {
+        User user = userRepository.findById(cartConfirmationDTO.getUserId())
+                .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_027, cartConfirmationDTO.getUserId()));
+        Integer addressId = cartConfirmationDTO.getAddress().getAddressId();
+        Address address = addressRepository.findById(addressId)
+                .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_038, addressId));
+        OrderStatus orderStatus = orderStatusRepository.findByStatus("NEW");
+
+        Order order = dataMapperService.orderDTOToOrder(user, address, orderStatus);
+        orderRepository.save(order);
+
+        saveNewOrderDetails(cartConfirmationDTO, order);
+        return order;
+    }
+
+    public PaymentTransaction saveNewPaymentTransaction(PaymentTransactionDTO paymentTransactionDTO) {
+        if (paymentTransactionDTO == null) {
+            throw new DataException(ErrorCode.ERR_098);
+        }
+        if (paymentTransactionDTO.getUserId() == null) {
+            throw new DataException(ErrorCode.ERR_014);
+        }
+        if (paymentTransactionDTO.getPaidAmount() == null) {
+            throw new DataException(ErrorCode.ERR_099);
+        }
+        Order order = orderRepository.findById(paymentTransactionDTO.getOrderId())
+                .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_027, paymentTransactionDTO.getUserId()));
+        String paymentStatusStatus = "PENDING";
+        PaymentStatus paymentStatus = paymentStatusRepository.findByStatus(paymentStatusStatus)
+                .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_102, paymentStatusStatus));
+        PaymentTransaction paymentTransaction =
+                dataMapperService.paymentTransactionDTOToPaymentTransaction(paymentTransactionDTO, order, paymentStatus);
+        paymentTransactionRepository.save(paymentTransaction);
+        return paymentTransaction;
+    }
+
+
+    private void saveNewOrderDetails(CartConfirmationDTO cartConfirmationDTO, Order order) {
+        List<CartItemDTO> cartItemDTOs = cartConfirmationDTO.getCartItems();
+        cartItemDTOs.forEach(cartItemDTO ->
+                cartItemDTO.getItems().forEach(itemDTO -> {
+
+                    Integer itemId = itemDTO.getItemId();
+                    Item item = itemRepository.findById(itemId)
+                            .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_053, itemId));
+
+                    String itemSizeSize = cartItemDTO.getSize();
+                    ItemSize itemSize = itemSizeRepository.findBySize(itemSizeSize)
+                            .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_104, itemSizeSize));
+
+                    OrderDetails orderDetails = new OrderDetails();
+                    orderDetails.setOrder(order);
+                    orderDetails.setItem(item);
+                    orderDetails.setItemSize(itemSize);
+                    orderDetailsRepository.save(orderDetails);
+                }));
     }
 }

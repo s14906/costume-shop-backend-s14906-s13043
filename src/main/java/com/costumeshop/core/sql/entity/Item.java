@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 @Getter
@@ -22,7 +23,7 @@ public class Item {
 
     private String description;
 
-    private Double price;
+    private BigDecimal price;
 
     private String title;
 

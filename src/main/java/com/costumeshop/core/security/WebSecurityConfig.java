@@ -6,6 +6,7 @@ import com.costumeshop.service.ShopUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -39,7 +40,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/users").permitAll()
                         .requestMatchers("/api/verification").permitAll()
                         .requestMatchers("/api/complaints").hasAuthority(EMPLOYEE)
-                        .requestMatchers("/api/orders").hasAuthority(EMPLOYEE)
+                        .requestMatchers(HttpMethod.GET,  "/api/orders").hasAuthority(EMPLOYEE)
 
                         .anyRequest().authenticated()
                 );

@@ -10,11 +10,9 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-public class CartItemDTO {
-    private Integer cartItemId;
-    private String title;
-    private List<ItemWithImageDTO> items;
-    private BigDecimal price;
-    private String size;
-
+public class CartConfirmationDTO {
+    private Integer userId;
+    private BigDecimal paidAmount;
+    private AddressDTO address;
+    private List<CartItemDTO> cartItems;
 }

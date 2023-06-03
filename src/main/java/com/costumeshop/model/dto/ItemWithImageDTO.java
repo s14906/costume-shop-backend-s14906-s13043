@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -13,7 +14,7 @@ public class ItemWithImageDTO {
     private Integer itemId;
     private String title;
     private String description;
-    private Double price;
+    private BigDecimal price;
     private List<ItemImageDTO> itemImages;
 
 }

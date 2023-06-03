@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -292,9 +293,26 @@ public class DataMapperService {
     }
 
     public CartItemDTO cartItemToCartItemDTO(ItemCart itemCart, Integer userId) {
+        List<ItemWithImageDTO> itemWithImageDTOs = new ArrayList<>();
+        Item item = itemCart.getItem();
+
+        if (item == null) {
+            throw new DataException(ErrorCode.ERR_046);
+        }
+
+        for (int i = 0; i < itemCart.getItemAmount(); i++) {
+            ItemWithImageDTO itemWithImageDTO = ItemWithImageDTO.builder()
+                    .itemId(item.getId())
+                    .title(item.getTitle())
+                    .description(item.getDescription())
+                    .price(item.getPrice())
+                    .build();
+            itemWithImageDTOs.add(itemWithImageDTO);
+        }
+
         return CartItemDTO.builder()
                 .cartItemId(itemCart.getId())
-                .itemsAmount(itemCart.getItemAmount())
+                .items(itemWithImageDTOs)
                 .size(itemCart.getItemSize().getSize())
                 .price(itemCart.getItem().getPrice())
                 .title(itemCart.getItem().getTitle())
@@ -338,9 +356,9 @@ public class DataMapperService {
                 .email(user.getEmail())
                 .build();
 
-        Double totalPrice = order.getOrdersDetails().stream()
-                .mapToDouble(orderDetails -> orderDetails.getItem().getPrice())
-                .sum();
+        BigDecimal totalPrice = order.getOrdersDetails().stream()
+                .map(orderDetails -> orderDetails.getItem().getPrice())
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         return OrderDTO.builder()
                 .orderId(order.getId())
@@ -481,5 +499,47 @@ public class DataMapperService {
         }
         ItemWithImageDTO itemWithImageDTO = itemToItemWithImageDTO(item, itemImageDTOs);
         itemWithImageDTOs.add(itemWithImageDTO);
+    }
+
+    public Order orderDTOToOrder(User user, Address address, OrderStatus orderStatus) {
+        if (user == null) {
+            throw new DataException(ErrorCode.ERR_014);
+        }
+        if (address == null) {
+            throw new DataException(ErrorCode.ERR_021);
+        }
+
+        Order order = new Order();
+        order.setUser(user);
+        order.setOrderStatus(orderStatus);
+        order.setCreatedDate(new Date());
+        order.setLastModifiedDate(new Date());
+        order.setAddress(address);
+
+        return order;
+    }
+
+    public PaymentTransaction paymentTransactionDTOToPaymentTransaction(PaymentTransactionDTO paymentTransactionDTO,
+                                                                        Order order,
+                                                                        PaymentStatus paymentStatus) {
+        if (paymentTransactionDTO == null) {
+            throw new DataException(ErrorCode.ERR_098);
+        }
+        if (paymentTransactionDTO.getOrderId() == null) {
+            throw new DataException(ErrorCode.ERR_059);
+        }
+        if (paymentTransactionDTO.getPaidAmount() == null) {
+            throw new DataException(ErrorCode.ERR_099);
+        }
+
+        PaymentTransaction paymentTransaction = new PaymentTransaction();
+        paymentTransaction.setOrder(order);
+        paymentTransaction.setPaymentStatus(paymentStatus);
+        paymentTransaction.setCreatedDate(new Date());
+        paymentTransaction.setLastModifiedDate(new Date());
+        paymentTransaction.setHttpCodeResponse("200");
+        paymentTransaction.setPaidAmount(paymentTransactionDTO.getPaidAmount());
+
+        return paymentTransaction;
     }
 }

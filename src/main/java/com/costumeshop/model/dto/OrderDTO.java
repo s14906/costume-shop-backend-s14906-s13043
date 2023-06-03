@@ -4,7 +4,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -14,6 +16,8 @@ public class OrderDTO {
     private UserDTO user;
     private String orderStatus;
     private Date createdDate;
-    private Double totalPrice;
+    private BigDecimal totalPrice;
+    private AddressDTO address;
+    private List<OrderDetailsDTO> ordersDetails;
 
 }

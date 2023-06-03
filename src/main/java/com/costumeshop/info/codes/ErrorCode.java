@@ -102,7 +102,16 @@ public enum ErrorCode implements BasicMessageCode {
     ERR_092("Error occurred when retrieving items by search text: %1."),
     ERR_093("Error occurred when removing cart items for user ID: %1."),
     ERR_094("Failed to remove items from cart!"),
-    ERR_095("Could not find cart item ID: %1.");
+    ERR_095("Could not find cart item ID: %1."),
+    ERR_096("Error occurred when saving a new order for user ID: %1."),
+    ERR_097("Error occurred when saving a new order."),
+    ERR_098("Payment transaction is null!"),
+    ERR_099("Payment transaction paid amount is null!"),
+    ERR_100("Error occurred when saving a new payment transaction for user ID: %1."),
+    ERR_101("Error occurred when saving a new payment transaction."),
+    ERR_102("Could not find payment status for status: %1."),
+    ERR_103("Cart items are null!"),
+    ERR_104("Could not find item size by size: %1.");
 
     private String message;
 

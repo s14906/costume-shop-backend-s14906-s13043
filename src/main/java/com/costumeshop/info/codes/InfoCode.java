@@ -55,7 +55,11 @@ public enum InfoCode implements BasicMessageCode {
     INFO_045("Cart items removed for user ID: %1."),
     INFO_046("Items removed from cart!"),
     INFO_047("Cart item ID: %1 deleted for user ID: %2."),
-    INFO_048("Item removed from cart!");
+    INFO_048("Item removed from cart!"),
+    INFO_049("New order has been created with ID: %1."),
+    INFO_050("New order has been created."),
+    INFO_051("New payment transaction has been created with ID: %1 for user ID: %2."),
+    INFO_052("New payment transaction has been created.");
 
     private String message;
 
