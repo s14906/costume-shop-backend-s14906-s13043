@@ -289,6 +289,7 @@ public class DataMapperService {
                 .description(item.getDescription())
                 .price(item.getPrice())
                 .title(item.getTitle())
+                .quantity(item.getQuantity())
                 .build();
     }
 
@@ -306,6 +307,7 @@ public class DataMapperService {
                     .title(item.getTitle())
                     .description(item.getDescription())
                     .price(item.getPrice())
+                    .quantity(item.getQuantity())
                     .build();
             itemDTOs.add(itemDTO);
         }
