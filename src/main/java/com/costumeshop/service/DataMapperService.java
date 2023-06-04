@@ -290,12 +290,21 @@ public class DataMapperService {
                 .price(item.getPrice())
                 .title(item.getTitle())
                 .quantity(item.getQuantity())
+                .visible(item.getVisible())
+                .itemCategory(item.getItemCategory().getCategory())
+                .itemSet(item.getItemSet().getSet())
                 .build();
     }
 
-    public Item itemDTOToItem(ItemDTO itemDTO) {
-        if (itemDTO == null) {
+    public Item itemDTOToItem(ItemDTO itemDTO, Item item, ItemCategory itemCategory, ItemSet itemSet) {
+        if (itemDTO == null || item == null) {
             throw new DataException(ErrorCode.ERR_046);
+        }
+        if (itemCategory == null) {
+            throw new DataException(ErrorCode.ERR_114);
+        }
+        if (itemSet == null) {
+            throw new DataException(ErrorCode.ERR_115);
         }
         if (itemDTO.getItemId() == null) {
             throw new DataException(ErrorCode.ERR_047);
@@ -319,13 +328,13 @@ public class DataMapperService {
             throw new DataException(ErrorCode.ERR_042);
         }
 
-        Item item = new Item();
         item.setTitle(itemDTO.getTitle());
-        item.setItemSetId(1);
         item.setDescription(itemDTO.getDescription());
-        item.setCategoryId(1);
         item.setPrice(itemDTO.getPrice());
         item.setQuantity(itemDTO.getQuantity());
+        item.setVisible(itemDTO.getVisible());
+        item.setItemCategory(itemCategory);
+        item.setItemSet(itemSet);
         return item;
     }
 

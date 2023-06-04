@@ -36,11 +36,12 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/login").permitAll()
                         .requestMatchers("/api/registration").permitAll()
-                        .requestMatchers("/api/items/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/items/**").permitAll()
                         .requestMatchers("/api/users").permitAll()
                         .requestMatchers("/api/verification").permitAll()
                         .requestMatchers("/api/complaints").hasAuthority(EMPLOYEE)
-                        .requestMatchers(HttpMethod.GET,  "/api/orders").hasAuthority(EMPLOYEE)
+                        .requestMatchers(HttpMethod.GET, "/api/orders").hasAuthority(EMPLOYEE)
+                        .requestMatchers(HttpMethod.POST, "/api/items").hasAuthority(EMPLOYEE)
 
                         .anyRequest().authenticated()
                 );

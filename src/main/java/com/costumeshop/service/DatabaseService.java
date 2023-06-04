@@ -43,6 +43,8 @@ public class DatabaseService {
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final PaymentStatusRepository paymentStatusRepository;
     private final OrderStatusRepository orderStatusRepository;
+    private final ItemCategoryRepository itemCategoryRepository;
+    private final ItemSetRepository itemSetRepository;
     private final MailService mailService;
     private final PasswordService passwordService;
     private final DataMapperService dataMapperService;
@@ -120,12 +122,18 @@ public class DatabaseService {
                 new DatabaseException(ErrorCode.ERR_053, id));
     }
 
-    public void deleteItemById(Integer itemId) {
+    public void setItemVisibleById(Integer itemId) {
         if (itemId == null) {
             throw new DataException(ErrorCode.ERR_047);
         }
         Item item = findItemById(itemId);
-        itemRepository.delete(item);
+        if (item.getVisible() == 1) {
+            item.setVisible(0);
+        } else {
+            item.setVisible(1);
+        }
+        itemRepository.save(item);
+
     }
 
     public ItemDTO getItemDTOById(Integer itemId) {
@@ -144,19 +152,39 @@ public class DatabaseService {
 
 
     public Integer insertItem(ItemDTO itemDTO) {
-        Item item = dataMapperService.itemDTOToItem(itemDTO);
+        Item item = new Item();
+        Integer itemId = itemDTO.getItemId();
+        if (itemId != null && itemId != 0) {
+            item = findItemById(itemDTO.getItemId());
+        }
+
+        String itemCategoryCategory = itemDTO.getItemCategory();
+        ItemCategory itemCategory = itemCategoryRepository.findByCategory(itemCategoryCategory)
+                .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_112, itemCategoryCategory));
+
+        String itemSetSet = itemDTO.getItemSet();
+        ItemSet itemSet = itemSetRepository.findBySet(itemSetSet)
+                .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_113, itemSetSet));
+
+        item = dataMapperService.itemDTOToItem(itemDTO, item, itemCategory, itemSet);
         itemRepository.save(item);
 
+        Set<ItemImage> itemImages = item.getItemImages();
+        if (itemImages != null) {
+            itemImageRepository.deleteAll(item.getItemImages());
+        }
+
+        Item finalItem = item;
         itemDTO.getItemImages().forEach(itemImageDTO -> {
             ItemImage itemImage = new ItemImage();
-            itemImage.setItem(item);
+            itemImage.setItem(finalItem);
             itemImage.setImageBase64(itemImageDTO.getImageBase64());
             itemImageRepository.save(itemImage);
         });
         return item.getId();
     }
 
-    public List<ItemDTO> findAllItemsWithImages() {
+    public List<ItemDTO> findAllItems() {
         List<ItemDTO> itemDTOs = new ArrayList<>();
         for (Item item : itemRepository.findAll()) {
             dataMapperService.addItemToItemDTOList(itemDTOs, item);
@@ -522,5 +550,29 @@ public class DatabaseService {
                     orderDetails.setItemSize(itemSize);
                     orderDetailsRepository.save(orderDetails);
                 }));
+    }
+
+    public List<ItemCategoryDTO> findAllItemCategories() {
+        List<ItemCategoryDTO> itemCategoryDTOs = new ArrayList<>();
+        itemCategoryRepository.findAll().forEach(itemCategory -> {
+            ItemCategoryDTO itemCategoryDTO = ItemCategoryDTO.builder()
+                    .itemCategoryId(itemCategory.getId())
+                    .category(itemCategory.getCategory())
+                    .build();
+            itemCategoryDTOs.add(itemCategoryDTO);
+        });
+        return itemCategoryDTOs;
+    }
+
+    public List<ItemSetDTO> findAllItemSets() {
+        List<ItemSetDTO> itemSetDTOs = new ArrayList<>();
+        itemSetRepository.findAll().forEach(itemSet -> {
+            ItemSetDTO itemSetDTO = ItemSetDTO.builder()
+                    .itemSetId(itemSet.getId())
+                    .set(itemSet.getSet())
+                    .build();
+            itemSetDTOs.add(itemSetDTO);
+        });
+        return itemSetDTOs;
     }
 }

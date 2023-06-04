@@ -5,7 +5,9 @@ import com.costumeshop.core.sql.entity.ItemSize;
 import com.costumeshop.info.codes.ErrorCode;
 import com.costumeshop.info.codes.InfoCode;
 import com.costumeshop.info.utils.CodeMessageUtils;
+import com.costumeshop.model.dto.ItemCategoryDTO;
 import com.costumeshop.model.dto.ItemDTO;
+import com.costumeshop.model.dto.ItemSetDTO;
 import com.costumeshop.model.response.ItemResponse;
 import com.costumeshop.model.response.SimpleResponse;
 import com.costumeshop.service.DatabaseService;
@@ -30,11 +32,11 @@ public class ItemController {
     private final DatabaseService databaseService;
 
     @GetMapping(path = "/items")
-    public @ResponseBody ResponseEntity<?> getAllItemsWithImages() {
+    public @ResponseBody ResponseEntity<?> getAllItems() {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            List<ItemDTO> itemDTOs = databaseService.findAllItemsWithImages();
+            List<ItemDTO> itemDTOs = databaseService.findAllItems();
 
             CodeMessageUtils.logMessage(InfoCode.INFO_011, logger);
             return new ResponseEntity<>(ItemResponse.builder()
@@ -47,7 +49,51 @@ public class ItemController {
             return new ResponseEntity<>(ItemResponse.builder()
                     .success(false)
                     .message(CodeMessageUtils.getMessage(ErrorCode.ERR_051))
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping(path = "/items/categories")
+    public @ResponseBody ResponseEntity<?> getAllItemCategories() {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            List<ItemCategoryDTO> itemCategoryDTOs = databaseService.findAllItemCategories();
+
+            CodeMessageUtils.logMessage(InfoCode.INFO_057, logger);
+            return new ResponseEntity<>(ItemResponse.builder()
+                    .success(true)
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_057))
+                    .itemCategories(itemCategoryDTOs)
                     .build(), responseHeaders, HttpStatus.OK);
+        } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_111, e, logger);
+            return new ResponseEntity<>(ItemResponse.builder()
+                    .success(false)
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_111))
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping(path = "/items/sets")
+    public @ResponseBody ResponseEntity<?> getAllItemSets() {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            List<ItemSetDTO> itemSetDTOs = databaseService.findAllItemSets();
+
+            CodeMessageUtils.logMessage(InfoCode.INFO_058, logger);
+            return new ResponseEntity<>(ItemResponse.builder()
+                    .success(true)
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_058))
+                    .itemSets(itemSetDTOs)
+                    .build(), responseHeaders, HttpStatus.OK);
+        } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_111, e, logger);
+            return new ResponseEntity<>(ItemResponse.builder()
+                    .success(false)
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_111))
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -69,26 +115,6 @@ public class ItemController {
             return new ResponseEntity<>(ItemResponse.builder()
                     .success(false)
                     .message(CodeMessageUtils.getMessage(ErrorCode.ERR_051))
-                    .build(), responseHeaders, HttpStatus.OK);
-        }
-    }
-
-    @DeleteMapping(path = "/items/{itemId}")
-    public @ResponseBody ResponseEntity<?> deleteItemById(@PathVariable Integer itemId) {
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
-        try {
-            databaseService.deleteItemById(itemId);
-            CodeMessageUtils.logMessage(InfoCode.INFO_053, itemId, logger);
-            return new ResponseEntity<>(SimpleResponse.builder()
-                    .success(true)
-                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_054))
-                    .build(), responseHeaders, HttpStatus.OK);
-        } catch (Exception e) {
-            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_105, itemId, e, logger);
-            return new ResponseEntity<>(SimpleResponse.builder()
-                    .success(false)
-                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_106))
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

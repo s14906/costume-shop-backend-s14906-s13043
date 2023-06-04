@@ -17,5 +17,7 @@ public class ItemDTO {
     private BigDecimal price;
     private List<ItemImageDTO> itemImages;
     private Integer quantity;
-
+    private Integer visible;
+    private String itemCategory;
+    private String itemSet;
 }

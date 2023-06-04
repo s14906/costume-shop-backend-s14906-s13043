@@ -58,7 +58,7 @@ public enum ErrorCode implements BasicMessageCode {
     ERR_048("Item description is null!"),
     ERR_049("Item price is null!"),
     ERR_050("Item title is null!"),
-    ERR_051("Error occurred when retrieving items with images!"),
+    ERR_051("Error occurred when retrieving items!"),
     ERR_052("Error occurred when retrieving item sizes!"),
     ERR_053("Could not find item with ID: %1."),
     ERR_054("Could not find item size with ID: %1."),
@@ -112,10 +112,18 @@ public enum ErrorCode implements BasicMessageCode {
     ERR_102("Could not find payment status for status: %1."),
     ERR_103("Cart items are null!"),
     ERR_104("Could not find item size by size: %1."),
-    ERR_105("Error occurred while removing the item with ID: %1."),
-    ERR_106("Error occurred while removing the item."),
+    ERR_105("Error occurred while setting visibility for item with ID: %1."),
+    ERR_106("Error occurred while setting visibility for item."),
     ERR_107("Item quantity is null!"),
-    ERR_108("Error occurred while inserting a new item.");
+    ERR_108("Error occurred while inserting a new item."),
+    ERR_109("Could not find item image with ID: %1."),
+    ERR_110("Error occurred while retrieving item categories."),
+    ERR_111("Error occurred while retrieving item sets."),
+    ERR_112("Item category not found: %1."),
+    ERR_113("Item set not found: %1."),
+    ERR_114("Item category is null."),
+    ERR_115("Item set is null.");
+
 
     private String message;
 
