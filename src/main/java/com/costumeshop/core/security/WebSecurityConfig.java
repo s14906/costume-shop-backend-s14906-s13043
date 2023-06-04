@@ -38,6 +38,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/registration").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/items/**").permitAll()
                         .requestMatchers("/api/users").permitAll()
+                        .requestMatchers("/api/search/**").permitAll()
                         .requestMatchers("/api/verification").permitAll()
                         .requestMatchers("/api/complaints").hasAuthority(EMPLOYEE)
                         .requestMatchers(HttpMethod.GET, "/api/orders").hasAuthority(EMPLOYEE)
