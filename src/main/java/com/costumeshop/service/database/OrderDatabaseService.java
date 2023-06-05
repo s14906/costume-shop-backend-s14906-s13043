@@ -93,6 +93,16 @@ public class OrderDatabaseService {
         }
     }
 
+    public UserDTO findUserByOrderId(Integer orderId) {
+        if (orderId == null) {
+            throw new DataException(ErrorCode.ERR_061);
+        }
+
+        Order order = findOrderById(orderId);
+        User user = order.getUser();
+        return dataMapperService.userToUserDTO(user);
+    }
+
     public Order insertNewOrderByOrderDTO(CartConfirmationDTO cartConfirmationDTO) {
         User user = userDatabaseService.findUserById(cartConfirmationDTO.getUserId());
         Integer addressId = cartConfirmationDTO.getAddress().getAddressId();

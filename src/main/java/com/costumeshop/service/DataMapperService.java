@@ -153,6 +153,8 @@ public class DataMapperService {
         return UserDTO.builder()
                 .id(user.getId())
                 .token(user.getVerificationToken())
+                .username(user.getUsername())
+                .surname(user.getSurname())
                 .email(user.getEmail())
                 .name(user.getName())
                 .phone(user.getPhone())

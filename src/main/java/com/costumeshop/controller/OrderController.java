@@ -114,6 +114,27 @@ public class OrderController {
         }
     }
 
+    @GetMapping(path = "/orders/{orderId}/user")
+    public @ResponseBody ResponseEntity<?> getUserByOrderId(@PathVariable("orderId") Integer orderId) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            UserDTO userDTO = orderDatabaseService.findUserByOrderId(orderId);
+            CodeMessageUtils.logMessage(InfoCode.INFO_064, orderId, logger);
+            return new ResponseEntity<>(UserResponse.builder()
+                    .success(true)
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_064, orderId))
+                    .user(userDTO)
+                    .build(), responseHeaders, HttpStatus.OK);
+        } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_124, orderId, e, logger);
+            return new ResponseEntity<>(UserResponse.builder()
+                    .success(false)
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_124, orderId))
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @PostMapping(path = "/orders")
     public @ResponseBody ResponseEntity<?> postUpdateOrderStatusForOrder(@RequestBody OrderStatusDTO orderStatusDTO) {
         HttpHeaders responseHeaders = new HttpHeaders();

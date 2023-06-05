@@ -130,7 +130,8 @@ public enum ErrorCode implements BasicMessageCode {
     ERR_120("Error occurred when changing the status for complaint ID: %1."),
     ERR_121("Amount of items to be purchased is higher than number of items available."),
     ERR_122("Error occurred when retrieving order statuses."),
-    ERR_123("Error occurred when updating order status for order: %1.");
+    ERR_123("Error occurred when updating order status for order: %1."),
+    ERR_124("Error occurred while retrieving user by order ID: %1");
 
 
     private String message;
