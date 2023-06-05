@@ -177,4 +177,10 @@ public class ItemDatabaseService {
     }
 
 
+    public void insertItem(Item item) {
+        if (item == null) {
+            throw new DataException(ErrorCode.ERR_046);
+        }
+        itemRepository.save(item);
+    }
 }

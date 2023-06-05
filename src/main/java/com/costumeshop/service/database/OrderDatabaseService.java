@@ -133,20 +133,38 @@ public class OrderDatabaseService {
 
     private void insertNewOrderDetailsByCartConfirmationDTOAndOrder(CartConfirmationDTO cartConfirmationDTO, Order order) {
         List<CartItemDTO> cartItemDTOs = cartConfirmationDTO.getCartItems();
-        cartItemDTOs.forEach(cartItemDTO ->
-                cartItemDTO.getItems().forEach(itemDTO -> {
+        cartItemDTOs.forEach(cartItemDTO -> {
+                    deductItemQuantity(cartItemDTO);
+                    cartItemDTO.getItems().forEach(itemDTO -> {
 
-                    Integer itemId = itemDTO.getItemId();
-                    Item item = itemDatabaseService.findItemById(itemId);
+                        Integer itemId = itemDTO.getItemId();
+                        Item item = itemDatabaseService.findItemById(itemId);
 
-                    String itemSizeSize = cartItemDTO.getSize();
-                    ItemSize itemSize = itemDatabaseService.findItemSizeBySize(itemSizeSize);
+                        String itemSizeSize = cartItemDTO.getSize();
+                        ItemSize itemSize = itemDatabaseService.findItemSizeBySize(itemSizeSize);
 
-                    OrderDetails orderDetails = new OrderDetails();
-                    orderDetails.setOrder(order);
-                    orderDetails.setItem(item);
-                    orderDetails.setItemSize(itemSize);
-                    orderDetailsRepository.save(orderDetails);
-                }));
+                        OrderDetails orderDetails = new OrderDetails();
+                        orderDetails.setOrder(order);
+                        orderDetails.setItem(item);
+                        orderDetails.setItemSize(itemSize);
+                        orderDetailsRepository.save(orderDetails);
+                    });
+                }
+
+        );
+    }
+
+    private void deductItemQuantity(CartItemDTO cartItemDTO) {
+        Integer quantityToBeDeducted = cartItemDTO.getItems().size();
+        ItemDTO itemDTO = cartItemDTO.getItems().get(0);
+        Integer quantityAfterDeduction = itemDTO.getQuantity() - quantityToBeDeducted;
+        if (quantityAfterDeduction < 0) {
+            throw new DataException(ErrorCode.ERR_117);
+        }
+
+        Item item = itemDatabaseService.findItemById(itemDTO.getItemId());
+        item.setQuantity(quantityAfterDeduction);
+        itemDatabaseService.insertItem(item);
+        itemDTO.setQuantity(quantityAfterDeduction);
     }
 }
