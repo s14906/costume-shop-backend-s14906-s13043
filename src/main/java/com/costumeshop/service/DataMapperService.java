@@ -77,21 +77,9 @@ public class DataMapperService {
         if (userDetails == null) {
             throw new DataException(ErrorCode.ERR_015);
         }
-        if (user.getId() == null) {
-            throw new DataException(ErrorCode.ERR_017);
-        }
-        if (isNullOrTooLong(user.getName())) {
-            throw new DataException(ErrorCode.ERR_001);
-        }
-        if (isNullOrTooLong(user.getSurname())) {
-            throw new DataException(ErrorCode.ERR_004);
-        }
-        if (isNullOrTooLong(user.getEmail())) {
-            throw new DataException(ErrorCode.ERR_002);
-        }
-        if (isNullOrTooLong(user.getPhone())) {
-            throw new DataException(ErrorCode.ERR_006);
-        }
+
+        validateBasicUserData(user);
+
         if (token == null) {
             throw new DataException(ErrorCode.ERR_016);
         }
@@ -155,18 +143,9 @@ public class DataMapperService {
         if (user.getEmailVerified() == null) {
             throw new DataException(ErrorCode.ERR_026);
         }
-        if (isNullOrTooLong(user.getName())) {
-            throw new DataException(ErrorCode.ERR_001);
-        }
-        if (isNullOrTooLong(user.getSurname())) {
-            throw new DataException(ErrorCode.ERR_004);
-        }
-        if (isNullOrTooLong(user.getEmail())) {
-            throw new DataException(ErrorCode.ERR_002);
-        }
-        if (isNullOrTooLong(user.getPhone())) {
-            throw new DataException(ErrorCode.ERR_006);
-        }
+
+        validateBasicUserData(user);
+
         if (user.getUserRoles().isEmpty()) {
             throw new DataException(ErrorCode.ERR_018);
         }
@@ -370,21 +349,7 @@ public class DataMapperService {
         if (user == null) {
             throw new DataException(ErrorCode.ERR_014);
         }
-        if (user.getId() == null) {
-            throw new DataException(ErrorCode.ERR_017);
-        }
-        if (isNullOrTooLong(user.getName())) {
-            throw new DataException(ErrorCode.ERR_001);
-        }
-        if (isNullOrTooLong(user.getSurname())) {
-            throw new DataException(ErrorCode.ERR_004);
-        }
-        if (isNullOrTooLong(user.getEmail())) {
-            throw new DataException(ErrorCode.ERR_002);
-        }
-        if (isNullOrTooLong(user.getPhone())) {
-            throw new DataException(ErrorCode.ERR_006);
-        }
+        validateBasicUserData(user);
         if (order == null) {
             throw new DataException(ErrorCode.ERR_059);
         }
@@ -588,5 +553,23 @@ public class DataMapperService {
         paymentTransaction.setPaidAmount(paymentTransactionDTO.getPaidAmount());
 
         return paymentTransaction;
+    }
+
+    private void validateBasicUserData(User user) {
+        if (user.getId() == null) {
+            throw new DataException(ErrorCode.ERR_017);
+        }
+        if (isNullOrTooLong(user.getName())) {
+            throw new DataException(ErrorCode.ERR_001);
+        }
+        if (isNullOrTooLong(user.getSurname())) {
+            throw new DataException(ErrorCode.ERR_004);
+        }
+        if (isNullOrTooLong(user.getEmail())) {
+            throw new DataException(ErrorCode.ERR_002);
+        }
+        if (isNullOrTooLong(user.getPhone())) {
+            throw new DataException(ErrorCode.ERR_006);
+        }
     }
 }

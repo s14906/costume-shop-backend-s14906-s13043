@@ -13,7 +13,8 @@ import com.costumeshop.model.response.CartResponse;
 import com.costumeshop.model.response.OrderDetailsResponse;
 import com.costumeshop.model.response.OrderResponse;
 import com.costumeshop.model.response.SimpleResponse;
-import com.costumeshop.service.DatabaseService;
+import com.costumeshop.service.database.OrderDatabaseService;
+import com.costumeshop.service.database.CartDatabaseService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,14 +33,15 @@ import java.util.List;
 @CrossOrigin()
 public class OrderController {
     private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
-    private final DatabaseService databaseService;
+    private final OrderDatabaseService orderDatabaseService;
+    private final CartDatabaseService cartDatabaseService;
 
     @GetMapping(path = "/orders")
     public @ResponseBody ResponseEntity<?> getAllOrders() {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            List<OrderDTO> orderDTOs = databaseService.findAllOrders();
+            List<OrderDTO> orderDTOs = orderDatabaseService.findAllOrders();
             CodeMessageUtils.logMessage(InfoCode.INFO_027, logger);
             return new ResponseEntity<>(OrderResponse.builder()
                     .success(true)
@@ -60,7 +62,7 @@ public class OrderController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            List<OrderDTO> orderDTOs = databaseService.findAllOrdersForUser(userId);
+            List<OrderDTO> orderDTOs = orderDatabaseService.findAllOrdersByUserId(userId);
             CodeMessageUtils.logMessage(InfoCode.INFO_036, userId, logger);
             return new ResponseEntity<>(OrderResponse.builder()
                     .success(true)
@@ -81,7 +83,7 @@ public class OrderController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            OrderDetailsDTO orderDetailsDTO = databaseService.findOrderDetailsByOrderId(orderId);
+            OrderDetailsDTO orderDetailsDTO = orderDatabaseService.findOrderDetailsByOrderId(orderId);
             CodeMessageUtils.logMessage(InfoCode.INFO_037, orderId, logger);
             return new ResponseEntity<>(OrderDetailsResponse.builder()
                     .success(true)
@@ -105,7 +107,7 @@ public class OrderController {
         Integer userId = cartConfirmationDTO.getUserId();
         Order order;
         try {
-            order = databaseService.saveNewOrder(cartConfirmationDTO);
+            order = orderDatabaseService.insertNewOrderByOrderDTO(cartConfirmationDTO);
             CodeMessageUtils.logMessage(InfoCode.INFO_049, order.getId(), logger);
         } catch (Exception e) {
             CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_096, cartConfirmationDTO.getUserId(), e, logger);
@@ -116,7 +118,7 @@ public class OrderController {
         }
 
         try {
-            databaseService.deleteCartItemsForUser(userId);
+            cartDatabaseService.deleteCartItemsByUserId(userId);
             CodeMessageUtils.logMessage(InfoCode.INFO_045, userId, logger);
         } catch (Exception e) {
             CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_093, userId, e, logger);
@@ -133,7 +135,7 @@ public class OrderController {
                 .build();
 
         try {
-            PaymentTransaction paymentTransaction = databaseService.saveNewPaymentTransaction(paymentTransactionDTO);
+            PaymentTransaction paymentTransaction = orderDatabaseService.saveNewPaymentTransaction(paymentTransactionDTO);
             CodeMessageUtils.logMessage(InfoCode.INFO_051, paymentTransaction.getId(),
                     paymentTransactionDTO.getUserId(), logger);
         } catch (Exception e) {

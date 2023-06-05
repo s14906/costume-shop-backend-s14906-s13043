@@ -15,7 +15,8 @@ import com.costumeshop.model.response.GetAddressesResponse;
 import com.costumeshop.model.response.SimpleResponse;
 import com.costumeshop.model.response.UserResponse;
 import com.costumeshop.service.DataMapperService;
-import com.costumeshop.service.DatabaseService;
+import com.costumeshop.service.database.AddressDatabaseService;
+import com.costumeshop.service.database.UserDatabaseService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,11 +41,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @CrossOrigin
 public class UserController {
-
-    //TODO: logging
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
-
-    private final DatabaseService databaseService;
+    private final UserDatabaseService userDatabaseService;
+    private final AddressDatabaseService addressDatabaseService;
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
     private final DataMapperService dataMapperService;
@@ -55,17 +54,17 @@ public class UserController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            User existingUserByEmail = databaseService.findUserByEmail(dto.getEmail());
+            User existingUserByEmail = userDatabaseService.findUserByEmail(dto.getEmail());
             if (existingUserByEmail != null) {
                 throw new DataException(ErrorCode.ERR_009);
             }
 
-            User existingUserByUsername = databaseService.findUserByUsername(dto.getEmail());
+            User existingUserByUsername = userDatabaseService.findUserByUsername(dto.getEmail());
             if (existingUserByUsername != null) {
                 throw new DataException(ErrorCode.ERR_010);
             }
 
-            Integer userId = databaseService.insertNewRegisteredUser(dto);
+            Integer userId = userDatabaseService.insertNewUserByUserRegistrationDTO(dto);
 
             CodeMessageUtils.logMessage(InfoCode.INFO_017, userId, logger);
             return new ResponseEntity<>(SimpleResponse.builder()
@@ -87,7 +86,7 @@ public class UserController {
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
 
         try {
-            User user = databaseService.findUserByUsernameOrEmail(dto.getEmail());
+            User user = userDatabaseService.findUserByUsernameOrEmail(dto.getEmail());
             Integer emailVerified = user.getEmailVerified();
             if (emailVerified == null || emailVerified.equals(0)) {
                 throw new DataException(ErrorCode.ERR_012);
@@ -131,7 +130,7 @@ public class UserController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            User user = databaseService.findUserByVerificationToken(verificationToken);
+            User user = userDatabaseService.findUserByVerificationToken(verificationToken);
 
             UserDTO userDTO = dataMapperService.userToUserDTO(user);
             CodeMessageUtils.logMessage(InfoCode.INFO_019, userDTO.getId(), logger);
@@ -155,7 +154,7 @@ public class UserController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            databaseService.verifyUser(userId);
+            userDatabaseService.verifyUser(userId);
             CodeMessageUtils.logMessage(InfoCode.INFO_020, userId, logger);
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(true)
@@ -175,7 +174,7 @@ public class UserController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            Integer addressId = databaseService.insertNewAddressForUser(request);
+            Integer addressId = addressDatabaseService.insertNewAddressByAddressDTO(request);
             CodeMessageUtils.logMessage(InfoCode.INFO_014, addressId, request.getUserId(), logger);
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(true)
@@ -195,7 +194,7 @@ public class UserController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            List<AddressDTO> addresses = databaseService.getAddressesForUser(userId);
+            List<AddressDTO> addresses = addressDatabaseService.findAddressesByUserId(userId);
             CodeMessageUtils.logMessage(InfoCode.INFO_015, userId, logger);
             return new ResponseEntity<>(GetAddressesResponse.builder()
                     .success(true)
@@ -216,7 +215,7 @@ public class UserController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            databaseService.deleteAddress(addressId);
+            addressDatabaseService.deleteAddressById(addressId);
             CodeMessageUtils.logMessage(InfoCode.INFO_016, addressId, logger);
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(true)
@@ -243,7 +242,7 @@ public class UserController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            databaseService.changePasswordForUser(userId, newPassword);
+            userDatabaseService.changePasswordForUser(userId, newPassword);
             CodeMessageUtils.logMessage(InfoCode.INFO_018, userId, logger);
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(true)

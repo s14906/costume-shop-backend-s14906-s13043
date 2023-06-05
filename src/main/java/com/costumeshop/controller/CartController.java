@@ -7,7 +7,8 @@ import com.costumeshop.model.dto.AddToCartDTO;
 import com.costumeshop.model.dto.CartItemDTO;
 import com.costumeshop.model.response.CartResponse;
 import com.costumeshop.model.response.SimpleResponse;
-import com.costumeshop.service.DatabaseService;
+import com.costumeshop.service.database.OrderDatabaseService;
+import com.costumeshop.service.database.CartDatabaseService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,14 +26,15 @@ import java.util.List;
 @CrossOrigin()
 public class CartController {
     private static final Logger logger = LoggerFactory.getLogger(CartController.class);
-    private final DatabaseService databaseService;
+    private final OrderDatabaseService orderDatabaseService;
+    private final CartDatabaseService cartDatabaseService;
 
     @PostMapping(path = "/cart")
     public @ResponseBody ResponseEntity<?> postAddToCart(@RequestBody AddToCartDTO request) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            databaseService.insertItemToCart(request);
+            cartDatabaseService.insertCartItemByAddToCartDTO(request);
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(true)
                     .message(CodeMessageUtils.getMessage(InfoCode.INFO_024))
@@ -52,7 +54,7 @@ public class CartController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            List<CartItemDTO> cartItemDTOs = databaseService.findCartItemsForUser(userId);
+            List<CartItemDTO> cartItemDTOs = cartDatabaseService.findCartItemsByUserId(userId);
             CodeMessageUtils.logMessage(InfoCode.INFO_026, userId, logger);
             return new ResponseEntity<>(CartResponse.builder()
                     .success(true)
@@ -73,7 +75,7 @@ public class CartController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            databaseService.deleteCartItemsForUser(userId);
+            cartDatabaseService.deleteCartItemsByUserId(userId);
             CodeMessageUtils.logMessage(InfoCode.INFO_045, userId, logger);
             return new ResponseEntity<>(CartResponse.builder()
                     .success(true)
@@ -94,7 +96,7 @@ public class CartController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            databaseService.deleteCartItemForUser(cartItemId);
+            cartDatabaseService.deleteCartItemByCartItemId(cartItemId);
             CodeMessageUtils.logMessage(InfoCode.INFO_047, cartItemId, userId, logger);
             return new ResponseEntity<>(CartResponse.builder()
                     .success(true)

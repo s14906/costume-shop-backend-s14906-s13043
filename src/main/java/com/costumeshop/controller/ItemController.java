@@ -1,6 +1,5 @@
 package com.costumeshop.controller;
 
-import com.costumeshop.core.sql.entity.ItemColor;
 import com.costumeshop.core.sql.entity.ItemSize;
 import com.costumeshop.info.codes.ErrorCode;
 import com.costumeshop.info.codes.InfoCode;
@@ -10,7 +9,8 @@ import com.costumeshop.model.dto.ItemDTO;
 import com.costumeshop.model.dto.ItemSetDTO;
 import com.costumeshop.model.response.ItemResponse;
 import com.costumeshop.model.response.SimpleResponse;
-import com.costumeshop.service.DatabaseService;
+import com.costumeshop.service.database.OrderDatabaseService;
+import com.costumeshop.service.database.ItemDatabaseService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,14 +29,15 @@ import java.util.List;
 @CrossOrigin()
 public class ItemController {
     private static final Logger logger = LoggerFactory.getLogger(ItemController.class);
-    private final DatabaseService databaseService;
+    private final OrderDatabaseService orderDatabaseService;
+    private final ItemDatabaseService itemDatabaseService;
 
     @GetMapping(path = "/items")
     public @ResponseBody ResponseEntity<?> getAllItems() {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            List<ItemDTO> itemDTOs = databaseService.findAllItems();
+            List<ItemDTO> itemDTOs = itemDatabaseService.findAllItems();
 
             CodeMessageUtils.logMessage(InfoCode.INFO_011, logger);
             return new ResponseEntity<>(ItemResponse.builder()
@@ -58,7 +59,7 @@ public class ItemController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            List<ItemCategoryDTO> itemCategoryDTOs = databaseService.findAllItemCategories();
+            List<ItemCategoryDTO> itemCategoryDTOs = itemDatabaseService.findAllItemCategories();
 
             CodeMessageUtils.logMessage(InfoCode.INFO_057, logger);
             return new ResponseEntity<>(ItemResponse.builder()
@@ -80,7 +81,7 @@ public class ItemController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            List<ItemSetDTO> itemSetDTOs = databaseService.findAllItemSets();
+            List<ItemSetDTO> itemSetDTOs = itemDatabaseService.findAllItemSets();
 
             CodeMessageUtils.logMessage(InfoCode.INFO_058, logger);
             return new ResponseEntity<>(ItemResponse.builder()
@@ -102,7 +103,7 @@ public class ItemController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            ItemDTO itemDTO = databaseService.getItemDTOById(itemId);
+            ItemDTO itemDTO = itemDatabaseService.findItemDTOById(itemId);
 
             CodeMessageUtils.logMessage(InfoCode.INFO_011, logger);
             return new ResponseEntity<>(ItemResponse.builder()
@@ -124,7 +125,7 @@ public class ItemController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            Integer itemId = databaseService.insertItem(itemDTO);
+            Integer itemId = itemDatabaseService.insertItemByItemDTO(itemDTO);
             CodeMessageUtils.logMessage(InfoCode.INFO_055, itemId, logger);
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(true)
@@ -144,7 +145,7 @@ public class ItemController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            List<ItemDTO> itemDTOs = databaseService.findAllItemsWithImagesBySearchText(searchText);
+            List<ItemDTO> itemDTOs = itemDatabaseService.findAllItemsBySearchText(searchText);
             CodeMessageUtils.logMessage(InfoCode.INFO_043, searchText, itemDTOs.size(), logger);
             return new ResponseEntity<>(ItemResponse.builder()
                     .success(true)
@@ -165,7 +166,7 @@ public class ItemController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            List<ItemSize> itemSizes = databaseService.findAllItemSizes();
+            List<ItemSize> itemSizes = itemDatabaseService.findAllItemSizes();
 
             CodeMessageUtils.logMessage(InfoCode.INFO_021, logger);
             return new ResponseEntity<>(ItemResponse.builder()
@@ -181,11 +182,4 @@ public class ItemController {
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-    //TODO: delete this
-    @GetMapping(path = "/items/colors")
-    public List<ItemColor> getAllItemColors() {
-        return databaseService.findAllItemColors();
-    }
-
 }

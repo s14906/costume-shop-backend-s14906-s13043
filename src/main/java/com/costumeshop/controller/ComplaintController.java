@@ -9,7 +9,7 @@ import com.costumeshop.model.dto.CreateNewComplaintDTO;
 import com.costumeshop.model.response.ComplaintChatMessageResponse;
 import com.costumeshop.model.response.ComplaintResponse;
 import com.costumeshop.model.response.SimpleResponse;
-import com.costumeshop.service.DatabaseService;
+import com.costumeshop.service.database.ComplaintDatabaseService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,14 +28,14 @@ import java.util.List;
 @CrossOrigin()
 public class ComplaintController {
     private static final Logger logger = LoggerFactory.getLogger(ComplaintController.class);
-    private final DatabaseService databaseService;
+    private final ComplaintDatabaseService complaintDatabaseService;
 
     @GetMapping(path = "/complaints")
     public @ResponseBody ResponseEntity<?> getAllComplaints() {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            List<ComplaintDTO> complaintDTOs = databaseService.findAllComplaints();
+            List<ComplaintDTO> complaintDTOs = complaintDatabaseService.findAllComplaints();
             CodeMessageUtils.logMessage(InfoCode.INFO_028, logger);
             return new ResponseEntity<>(ComplaintResponse.builder()
                     .success(true)
@@ -56,7 +56,7 @@ public class ComplaintController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            ComplaintDTO complaintDTO = databaseService.findComplaint(complaintId);
+            ComplaintDTO complaintDTO = complaintDatabaseService.findComplaintById(complaintId);
             CodeMessageUtils.logMessage(InfoCode.INFO_029, complaintId, logger);
             return new ResponseEntity<>(ComplaintResponse.builder()
                     .success(true)
@@ -77,7 +77,7 @@ public class ComplaintController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            List<ComplaintChatMessageDTO> complaintChatMessageDTOs = databaseService.findComplaintChatMessages(complaintId);
+            List<ComplaintChatMessageDTO> complaintChatMessageDTOs = complaintDatabaseService.findComplaintChatMessagesByComplaintId(complaintId);
             CodeMessageUtils.logMessage(InfoCode.INFO_031, complaintId, logger);
             return new ResponseEntity<>(ComplaintChatMessageResponse.builder()
                     .success(true)
@@ -100,7 +100,7 @@ public class ComplaintController {
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
 
         try {
-            Integer complaintChatMessageId = databaseService.saveComplaintChatMessage(complaintChatMessageDTO);
+            Integer complaintChatMessageId = complaintDatabaseService.insertComplaintChatMessageByComplaintChatMessageDTO(complaintChatMessageDTO);
             CodeMessageUtils.logMessage(InfoCode.INFO_033, complaintChatMessageDTO.getUser().getId(),
                     complaintChatMessageId, logger);
             return new ResponseEntity<>(ComplaintResponse.builder()
@@ -123,7 +123,7 @@ public class ComplaintController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            databaseService.assignEmployeeToComplaint(userId, complaintId);
+            complaintDatabaseService.assignEmployeeToComplaint(userId, complaintId);
             CodeMessageUtils.logMessage(InfoCode.INFO_035, complaintId, userId, logger);
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(true)
@@ -144,7 +144,7 @@ public class ComplaintController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            Integer complaintId = databaseService.saveNewComplaint(createNewComplaintDTO);
+            Integer complaintId = complaintDatabaseService.insertNewComplaintByCreateNewComplaintDTO(createNewComplaintDTO);
             CodeMessageUtils.logMessage(InfoCode.INFO_039, complaintId, logger);
             return new ResponseEntity<>(ComplaintResponse.builder()
                     .success(true)
