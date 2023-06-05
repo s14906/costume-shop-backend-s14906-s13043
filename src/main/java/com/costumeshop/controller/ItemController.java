@@ -183,4 +183,27 @@ public class ItemController {
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping(path = "/payments/{paymentTransactionId}")
+    public @ResponseBody ResponseEntity<?> getItemsByPaymentTransactionId(@PathVariable Integer paymentTransactionId) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            List<ItemDTO> items = itemDatabaseService.findAllItemsByPaymentTransactionId(paymentTransactionId);
+
+            CodeMessageUtils.logMessage(InfoCode.INFO_059, logger);
+            return new ResponseEntity<>(ItemResponse.builder()
+                    .success(true)
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_059))
+                    .items(items)
+                    .build(), responseHeaders, HttpStatus.OK);
+        } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_117, paymentTransactionId, e, logger);
+            return new ResponseEntity<>(ItemResponse.builder()
+                    .success(false)
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_117, paymentTransactionId))
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }

@@ -65,7 +65,8 @@ public enum InfoCode implements BasicMessageCode {
     INFO_055("New item has been inserted with ID: %1."),
     INFO_056("New item has been inserted."),
     INFO_057("Item categories retrieved."),
-    INFO_058("Item sets retrieved.");
+    INFO_058("Item sets retrieved."),
+    INFO_059("Items retrieved by payment transaction ID: %1.");
 
     private String message;
 

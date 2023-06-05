@@ -122,7 +122,10 @@ public enum ErrorCode implements BasicMessageCode {
     ERR_112("Item category not found: %1."),
     ERR_113("Item set not found: %1."),
     ERR_114("Item category is null."),
-    ERR_115("Item set is null.");
+    ERR_115("Item set is null."),
+    ERR_116("Could not find payment transaction with ID: %1."),
+    ERR_117("Error occurred while retrieving items by payment transaction ID: %1."),
+    ERR_118("Payment transaction ID is null.");
 
 
     private String message;

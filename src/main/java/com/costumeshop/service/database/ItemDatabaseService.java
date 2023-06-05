@@ -28,6 +28,7 @@ public class ItemDatabaseService {
     private final ItemImageRepository itemImageRepository;
     private final ItemSizeRepository itemSizeRepository;
     private final ItemCategoryRepository itemCategoryRepository;
+    private final PaymentTransactionRepository paymentTransactionRepository;
     private final ItemSetRepository itemSetRepository;
 
     public Item findItemById(Integer id) {
@@ -84,6 +85,25 @@ public class ItemDatabaseService {
         return IterableUtils.toList(itemSizeRepository.findAll());
     }
 
+    public List<ItemDTO> findAllItemsByPaymentTransactionId(Integer paymentTransactionId) {
+        if (paymentTransactionId == null) {
+            throw new DataException(ErrorCode.ERR_118);
+        }
+        PaymentTransaction paymentTransaction = paymentTransactionRepository.findById(paymentTransactionId)
+                .orElseThrow(() -> new DatabaseException(ErrorCode.ERR_027, paymentTransactionId));
+        Order order = paymentTransaction.getOrder();
+        List<Item> orderItems = order.getOrdersDetails().stream().map(OrderDetails::getItem).toList();
+        List<ItemDTO> itemDTOs = new ArrayList<>();
+        orderItems.forEach(orderItem -> {
+            ItemDTO itemDTO = ItemDTO.builder()
+                    .itemId(orderItem.getId())
+                    .title(orderItem.getTitle())
+                    .price(orderItem.getPrice())
+                    .build();
+            itemDTOs.add(itemDTO);
+        });
+        return itemDTOs;
+    }
 
     public List<ItemCategoryDTO> findAllItemCategories() {
         List<ItemCategoryDTO> itemCategoryDTOs = new ArrayList<>();

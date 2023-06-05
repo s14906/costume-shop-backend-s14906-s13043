@@ -9,10 +9,7 @@ import com.costumeshop.model.dto.CartConfirmationDTO;
 import com.costumeshop.model.dto.OrderDTO;
 import com.costumeshop.model.dto.OrderDetailsDTO;
 import com.costumeshop.model.dto.PaymentTransactionDTO;
-import com.costumeshop.model.response.CartResponse;
-import com.costumeshop.model.response.OrderDetailsResponse;
-import com.costumeshop.model.response.OrderResponse;
-import com.costumeshop.model.response.SimpleResponse;
+import com.costumeshop.model.response.*;
 import com.costumeshop.service.database.OrderDatabaseService;
 import com.costumeshop.service.database.CartDatabaseService;
 import lombok.RequiredArgsConstructor;
@@ -105,6 +102,7 @@ public class OrderController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         Integer userId = cartConfirmationDTO.getUserId();
+        PaymentTransaction paymentTransaction;
         Order order;
         try {
             order = orderDatabaseService.insertNewOrderByOrderDTO(cartConfirmationDTO);
@@ -135,7 +133,7 @@ public class OrderController {
                 .build();
 
         try {
-            PaymentTransaction paymentTransaction = orderDatabaseService.saveNewPaymentTransaction(paymentTransactionDTO);
+            paymentTransaction = orderDatabaseService.saveNewPaymentTransaction(paymentTransactionDTO);
             CodeMessageUtils.logMessage(InfoCode.INFO_051, paymentTransaction.getId(),
                     paymentTransactionDTO.getUserId(), logger);
         } catch (Exception e) {
@@ -147,8 +145,9 @@ public class OrderController {
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        return new ResponseEntity<>(SimpleResponse.builder()
+        return new ResponseEntity<>(PaymentTransactionResponse.builder()
                 .success(true)
+                .paymentTransactionId(paymentTransaction.getId())
                 .message(CodeMessageUtils.getMessage(InfoCode.INFO_052))
                 .build(), responseHeaders, HttpStatus.OK);
     }
