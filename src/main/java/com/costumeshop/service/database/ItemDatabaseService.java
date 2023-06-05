@@ -43,11 +43,30 @@ public class ItemDatabaseService {
         return itemDTOs;
     }
 
-    public List<ItemDTO> findAllItemsBySearchText(String searchText) {
+    public List<ItemDTO> findAllItemsBySearchTextAndCategory(String searchText, String category) {
         List<ItemDTO> itemDTOs = new ArrayList<>();
-        for (Item item : itemRepository.findAllByTitleOrDescription(searchText)) {
-            dataMapperService.addItemToItemDTOList(itemDTOs, item);
+        if (category.equals("all") && searchText.equals("all")) {
+            for (Item item : itemRepository.findAll()) {
+                dataMapperService.addItemToItemDTOList(itemDTOs, item);
+            }
+        } else if (category.equals("all")) {
+            for (Item item : itemRepository.findAllByTitleOrDescription(searchText)) {
+                dataMapperService.addItemToItemDTOList(itemDTOs, item);
+            }
+        } else if (searchText.equals("all")) {
+            for (Item item : itemRepository.findAll()) {
+                if (item.getItemCategory().getCategory().equals(category)) {
+                    dataMapperService.addItemToItemDTOList(itemDTOs, item);
+                }
+            }
+        } else {
+            for (Item item : itemRepository.findAllByTitleOrDescription(searchText)) {
+                if (item.getItemCategory().getCategory().equals(category)) {
+                    dataMapperService.addItemToItemDTOList(itemDTOs, item);
+                }
+            }
         }
+
         return itemDTOs;
     }
 
@@ -104,7 +123,6 @@ public class ItemDatabaseService {
         return dataMapperService.itemToItemDTO(item, itemImageDTOs);
     }
 
-
     public Integer insertItemByItemDTO(ItemDTO itemDTO) {
         Item item = new Item();
         Integer itemId = itemDTO.getItemId();
@@ -137,4 +155,6 @@ public class ItemDatabaseService {
         });
         return item.getId();
     }
+
+
 }

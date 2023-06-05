@@ -9,8 +9,8 @@ import com.costumeshop.model.dto.ItemDTO;
 import com.costumeshop.model.dto.ItemSetDTO;
 import com.costumeshop.model.response.ItemResponse;
 import com.costumeshop.model.response.SimpleResponse;
-import com.costumeshop.service.database.OrderDatabaseService;
 import com.costumeshop.service.database.ItemDatabaseService;
+import com.costumeshop.service.database.OrderDatabaseService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,12 +140,13 @@ public class ItemController {
         }
     }
 
-    @GetMapping(path = "/search/{searchText}")
-    public @ResponseBody ResponseEntity<?> getAllItemsBySearchText(@PathVariable String searchText) {
+    @GetMapping(path = "/search/{category}/{searchText}")
+    public @ResponseBody ResponseEntity<?> getAllItemsBySearchTextAndCategory(@PathVariable String searchText,
+                                                                              @PathVariable String category) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            List<ItemDTO> itemDTOs = itemDatabaseService.findAllItemsBySearchText(searchText);
+            List<ItemDTO> itemDTOs = itemDatabaseService.findAllItemsBySearchTextAndCategory(searchText, category);
             CodeMessageUtils.logMessage(InfoCode.INFO_043, searchText, itemDTOs.size(), logger);
             return new ResponseEntity<>(ItemResponse.builder()
                     .success(true)
