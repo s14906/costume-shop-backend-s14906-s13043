@@ -88,6 +88,7 @@ public class OrderDatabaseService {
                     .orderDate(order.getCreatedDate())
                     .items(itemDTOs)
                     .buyerId(order.getUser().getId())
+                    .orderStatus(order.getOrderStatus().getStatus())
                     .build();
         }
     }
@@ -152,6 +153,30 @@ public class OrderDatabaseService {
                 }
 
         );
+    }
+
+
+    public List<OrderStatusDTO> findAllOrderStatuses() {
+        List<OrderStatusDTO> orderStatusDTOs = new ArrayList<>();
+        orderStatusRepository.findAll().forEach(orderStatus -> {
+            OrderStatusDTO orderStatusDTO = OrderStatusDTO.builder()
+                    .orderStatusId(orderStatus.getId())
+                    .status(orderStatus.getStatus())
+                    .build();
+            orderStatusDTOs.add(orderStatusDTO);
+        });
+        return orderStatusDTOs;
+    }
+
+    public void updateOrderIdByOrderStatusDTO(OrderStatusDTO orderStatusDTO) {
+        if (orderStatusDTO.getOrderId() == null) {
+            throw new DataException(ErrorCode.ERR_059);
+        }
+        Order order = findOrderById(Integer.valueOf(orderStatusDTO.getOrderId()));
+        OrderStatus orderStatus = orderStatusRepository.findByStatus(orderStatusDTO.getStatus());
+        order.setOrderStatus(orderStatus);
+        order.setLastModifiedDate(new Date());
+        insertNewOrder(order);
     }
 
     private void deductItemQuantity(CartItemDTO cartItemDTO) {

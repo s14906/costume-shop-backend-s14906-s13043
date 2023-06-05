@@ -128,7 +128,9 @@ public enum ErrorCode implements BasicMessageCode {
     ERR_118("Payment transaction ID is null."),
     ERR_119("Error occurred when sending email to user with ID: %1."),
     ERR_120("Error occurred when changing the status for complaint ID: %1."),
-    ERR_121("Amount of items to be purchased is higher than number of items available.");
+    ERR_121("Amount of items to be purchased is higher than number of items available."),
+    ERR_122("Error occurred when retrieving order statuses."),
+    ERR_123("Error occurred when updating order status for order: %1.");
 
 
     private String message;

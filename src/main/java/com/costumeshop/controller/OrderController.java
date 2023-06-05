@@ -5,10 +5,7 @@ import com.costumeshop.core.sql.entity.PaymentTransaction;
 import com.costumeshop.info.codes.ErrorCode;
 import com.costumeshop.info.codes.InfoCode;
 import com.costumeshop.info.utils.CodeMessageUtils;
-import com.costumeshop.model.dto.CartConfirmationDTO;
-import com.costumeshop.model.dto.OrderDTO;
-import com.costumeshop.model.dto.OrderDetailsDTO;
-import com.costumeshop.model.dto.PaymentTransactionDTO;
+import com.costumeshop.model.dto.*;
 import com.costumeshop.model.response.*;
 import com.costumeshop.service.database.OrderDatabaseService;
 import com.costumeshop.service.database.CartDatabaseService;
@@ -54,6 +51,27 @@ public class OrderController {
         }
     }
 
+    @GetMapping(path = "/orders/statuses")
+    public @ResponseBody ResponseEntity<?> getAllOrderStatuses() {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            List<OrderStatusDTO> orderStatusDTOs = orderDatabaseService.findAllOrderStatuses();
+            CodeMessageUtils.logMessage(InfoCode.INFO_062, logger);
+            return new ResponseEntity<>(OrderStatusResponse.builder()
+                    .success(true)
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_062))
+                    .orderStatuses(orderStatusDTOs)
+                    .build(), responseHeaders, HttpStatus.OK);
+        } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_122, e, logger);
+            return new ResponseEntity<>(OrderResponse.builder()
+                    .success(false)
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_122))
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     @GetMapping(path = "/users/{userId}/orders")
     public @ResponseBody ResponseEntity<?> getOrdersForUser(@PathVariable("userId") Integer userId) {
         HttpHeaders responseHeaders = new HttpHeaders();
@@ -92,6 +110,27 @@ public class OrderController {
             return new ResponseEntity<>(OrderDetailsResponse.builder()
                     .success(false)
                     .message(CodeMessageUtils.getMessage(ErrorCode.ERR_085, orderId))
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping(path = "/orders")
+    public @ResponseBody ResponseEntity<?> postUpdateOrderStatusForOrder(@RequestBody OrderStatusDTO orderStatusDTO) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        Integer orderId = Integer.valueOf(orderStatusDTO.getOrderId());
+        try {
+            orderDatabaseService.updateOrderIdByOrderStatusDTO(orderStatusDTO);
+            CodeMessageUtils.logMessage(InfoCode.INFO_063, orderId, logger);
+            return new ResponseEntity<>(SimpleResponse.builder()
+                    .success(true)
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_063, orderId))
+                    .build(), responseHeaders, HttpStatus.OK);
+        } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_123, orderId, e, logger);
+            return new ResponseEntity<>(SimpleResponse.builder()
+                    .success(false)
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_123, orderId))
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

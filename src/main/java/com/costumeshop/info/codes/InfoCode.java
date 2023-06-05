@@ -68,7 +68,9 @@ public enum InfoCode implements BasicMessageCode {
     INFO_058("Item sets retrieved."),
     INFO_059("Items retrieved by payment transaction ID: %1."),
     INFO_060("Payment transaction confirmation email has been sent to user ID: %1."),
-    INFO_061("Complaint status has been updated to: %1 for complaint ID: %2.");
+    INFO_061("Complaint status has been updated to: %1 for complaint ID: %2."),
+    INFO_062("All order statuses retrieved"),
+    INFO_063("Order status has been updated for order ID: %1.");
 
     private String message;
 

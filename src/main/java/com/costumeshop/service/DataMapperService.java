@@ -500,6 +500,7 @@ public class DataMapperService {
                 .orderDate(order.getCreatedDate())
                 .complaint(complaintDTO)
                 .items(itemDTOs)
+                .orderStatus(order.getOrderStatus().getStatus())
                 .build();
     }
 
