@@ -18,5 +18,6 @@ public class ComplaintDTO {
     private String employeeName;
     private String employeeSurname;
     private String complaintStatus;
+    private Integer orderId;
     private Date createdDate;
 }

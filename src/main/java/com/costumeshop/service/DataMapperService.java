@@ -413,6 +413,7 @@ public class DataMapperService {
                 .employeeName(employee != null ? employee.getName() : null)
                 .employeeSurname(employee != null ? employee.getSurname() : null)
                 .createdDate(complaint.getCreatedDate())
+                .orderId(complaint.getOrder().getId())
                 .build();
     }
 
