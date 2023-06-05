@@ -256,6 +256,5 @@ public class UserController {
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
 }
 
