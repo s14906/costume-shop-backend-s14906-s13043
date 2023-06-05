@@ -29,7 +29,6 @@ import java.util.List;
 @CrossOrigin()
 public class ItemController {
     private static final Logger logger = LoggerFactory.getLogger(ItemController.class);
-    private final OrderDatabaseService orderDatabaseService;
     private final ItemDatabaseService itemDatabaseService;
 
     @GetMapping(path = "/items")

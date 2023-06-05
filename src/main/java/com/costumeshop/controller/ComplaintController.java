@@ -1,5 +1,6 @@
 package com.costumeshop.controller;
 
+import com.costumeshop.core.sql.entity.Complaint;
 import com.costumeshop.info.codes.ErrorCode;
 import com.costumeshop.info.codes.InfoCode;
 import com.costumeshop.info.utils.CodeMessageUtils;
@@ -9,6 +10,7 @@ import com.costumeshop.model.dto.CreateNewComplaintDTO;
 import com.costumeshop.model.response.ComplaintChatMessageResponse;
 import com.costumeshop.model.response.ComplaintResponse;
 import com.costumeshop.model.response.SimpleResponse;
+import com.costumeshop.service.DataMapperService;
 import com.costumeshop.service.database.ComplaintDatabaseService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -29,6 +31,7 @@ import java.util.List;
 public class ComplaintController {
     private static final Logger logger = LoggerFactory.getLogger(ComplaintController.class);
     private final ComplaintDatabaseService complaintDatabaseService;
+    private final DataMapperService dataMapperService;
 
     @GetMapping(path = "/complaints")
     public @ResponseBody ResponseEntity<?> getAllComplaints() {
@@ -47,7 +50,7 @@ public class ComplaintController {
             return new ResponseEntity<>(ComplaintResponse.builder()
                     .success(false)
                     .message(CodeMessageUtils.getMessage(ErrorCode.ERR_069))
-                    .build(), responseHeaders, HttpStatus.OK);
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -56,7 +59,7 @@ public class ComplaintController {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
-            ComplaintDTO complaintDTO = complaintDatabaseService.findComplaintById(complaintId);
+            ComplaintDTO complaintDTO = complaintDatabaseService.findComplaintDTOById(complaintId);
             CodeMessageUtils.logMessage(InfoCode.INFO_029, complaintId, logger);
             return new ResponseEntity<>(ComplaintResponse.builder()
                     .success(true)
@@ -68,7 +71,7 @@ public class ComplaintController {
             return new ResponseEntity<>(ComplaintResponse.builder()
                     .success(false)
                     .message(CodeMessageUtils.getMessage(ErrorCode.ERR_071, complaintId))
-                    .build(), responseHeaders, HttpStatus.OK);
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -89,7 +92,7 @@ public class ComplaintController {
             return new ResponseEntity<>(ComplaintChatMessageResponse.builder()
                     .success(false)
                     .message(CodeMessageUtils.getMessage(ErrorCode.ERR_075, complaintId))
-                    .build(), responseHeaders, HttpStatus.OK);
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -156,6 +159,29 @@ public class ComplaintController {
             return new ResponseEntity<>(ComplaintResponse.builder()
                     .success(false)
                     .message(CodeMessageUtils.getMessage(ErrorCode.ERR_088))
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping(path = "/complaints/{complaintId}")
+    public @ResponseBody ResponseEntity<?> postCloseComplaint(@PathVariable("complaintId") Integer complaintId) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            String closedStatus = "CLOSED";
+            Complaint complaint = complaintDatabaseService.updateComplaintStatus(complaintId, closedStatus);
+            ComplaintDTO complaintDTO = dataMapperService.complaintToComplaintDTO(complaint);
+            CodeMessageUtils.logMessage(InfoCode.INFO_061, closedStatus, complaintId, logger);
+            return new ResponseEntity<>(ComplaintResponse.builder()
+                    .success(true)
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_061, closedStatus, complaintId))
+                    .complaints(Collections.singletonList(complaintDTO))
+                    .build(), responseHeaders, HttpStatus.OK);
+        } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_120, complaintId, e, logger);
+            return new ResponseEntity<>(ComplaintResponse.builder()
+                    .success(false)
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_120, complaintId))
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

@@ -35,7 +35,7 @@ public class ComplaintDatabaseService {
     public List<ComplaintDTO> findAllComplaints() {
         List<ComplaintDTO> complaintDTOs = new ArrayList<>();
         for (Complaint complaint : complaintRepository.findAll()) {
-            ComplaintDTO complaintDTO = dataMapperService.getComplaintDTO(complaint);
+            ComplaintDTO complaintDTO = dataMapperService.complaintToComplaintDTO(complaint);
             complaintDTOs.add(complaintDTO);
         }
         return complaintDTOs;
@@ -50,10 +50,14 @@ public class ComplaintDatabaseService {
 
     }
 
-    public ComplaintDTO findComplaintById(Integer complaintId) {
-        Complaint complaint = this.complaintRepository.findById(complaintId).orElseThrow(() ->
+    public ComplaintDTO findComplaintDTOById(Integer complaintId) {
+        Complaint complaint = findComplaintById(complaintId);
+        return dataMapperService.complaintToComplaintDTO(complaint);
+    }
+
+    public Complaint findComplaintById(Integer complaintId) {
+        return this.complaintRepository.findById(complaintId).orElseThrow(() ->
                 new DatabaseException(ErrorCode.ERR_070, complaintId));
-        return dataMapperService.getComplaintDTO(complaint);
     }
 
     public List<ComplaintChatMessageDTO> findComplaintChatMessagesByComplaintId(Integer complaintId) {
@@ -131,5 +135,14 @@ public class ComplaintDatabaseService {
         complaintChatMessageRepository.save(complaintChatMessage);
         orderDatabaseService.insertNewOrder(order);
         return complaint.getId();
+    }
+
+    public Complaint updateComplaintStatus(Integer complaintId, String status) {
+        Complaint complaint = findComplaintById(complaintId);
+        ComplaintStatus complaintStatus = complaint.getComplaintStatus();
+        complaintStatus.setStatus(status);
+        complaint.setComplaintStatus(complaintStatus);
+        complaintRepository.save(complaint);
+        return complaint;
     }
 }

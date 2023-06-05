@@ -381,7 +381,7 @@ public class DataMapperService {
                 .build();
     }
 
-    public ComplaintDTO getComplaintDTO(Complaint complaint) {
+    public ComplaintDTO complaintToComplaintDTO(Complaint complaint) {
         if (complaint == null) {
             throw new DataException(ErrorCode.ERR_063);
         }

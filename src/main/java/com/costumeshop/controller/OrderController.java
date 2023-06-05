@@ -50,7 +50,7 @@ public class OrderController {
             return new ResponseEntity<>(OrderResponse.builder()
                     .success(false)
                     .message(CodeMessageUtils.getMessage(ErrorCode.ERR_062))
-                    .build(), responseHeaders, HttpStatus.OK);
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -71,7 +71,7 @@ public class OrderController {
             return new ResponseEntity<>(OrderResponse.builder()
                     .success(false)
                     .message(CodeMessageUtils.getMessage(ErrorCode.ERR_080, userId))
-                    .build(), responseHeaders, HttpStatus.OK);
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -92,7 +92,7 @@ public class OrderController {
             return new ResponseEntity<>(OrderDetailsResponse.builder()
                     .success(false)
                     .message(CodeMessageUtils.getMessage(ErrorCode.ERR_085, orderId))
-                    .build(), responseHeaders, HttpStatus.OK);
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

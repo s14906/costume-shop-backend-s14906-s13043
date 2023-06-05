@@ -126,7 +126,8 @@ public enum ErrorCode implements BasicMessageCode {
     ERR_116("Could not find payment transaction with ID: %1."),
     ERR_117("Error occurred while retrieving items by payment transaction ID: %1."),
     ERR_118("Payment transaction ID is null."),
-    ERR_119("Error occurred when sending email to user with ID: %1.");
+    ERR_119("Error occurred when sending email to user with ID: %1."),
+    ERR_120("Error occurred when changing the status for complaint ID: %1.");
 
 
     private String message;

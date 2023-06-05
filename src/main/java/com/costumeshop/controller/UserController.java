@@ -165,7 +165,7 @@ public class UserController {
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
                     .message(CodeMessageUtils.getMessage(ErrorCode.ERR_029, userId, e))
-                    .build(), responseHeaders, HttpStatus.OK);
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
