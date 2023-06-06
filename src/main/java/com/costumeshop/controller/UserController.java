@@ -59,7 +59,7 @@ public class UserController {
                 throw new DataException(ErrorCode.ERR_009);
             }
 
-            User existingUserByUsername = userDatabaseService.findUserByUsername(dto.getEmail());
+            User existingUserByUsername = userDatabaseService.findUserByUsername(dto.getUsername());
             if (existingUserByUsername != null) {
                 throw new DataException(ErrorCode.ERR_010);
             }
