@@ -169,7 +169,7 @@ public class ComplaintController {
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
             String closedStatus = "CLOSED";
-            Complaint complaint = complaintDatabaseService.updateComplaintStatus(complaintId, closedStatus);
+            Complaint complaint = complaintDatabaseService.updateComplaintStatus(complaintId);
             ComplaintDTO complaintDTO = dataMapperService.complaintToComplaintDTO(complaint);
             CodeMessageUtils.logMessage(InfoCode.INFO_061, closedStatus, complaintId, logger);
             return new ResponseEntity<>(ComplaintResponse.builder()

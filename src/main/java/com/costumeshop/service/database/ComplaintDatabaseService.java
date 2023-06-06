@@ -137,10 +137,9 @@ public class ComplaintDatabaseService {
         return complaint.getId();
     }
 
-    public Complaint updateComplaintStatus(Integer complaintId, String status) {
+    public Complaint updateComplaintStatus(Integer complaintId) {
         Complaint complaint = findComplaintById(complaintId);
-        ComplaintStatus complaintStatus = complaint.getComplaintStatus();
-        complaintStatus.setStatus(status);
+        ComplaintStatus complaintStatus = complaintStatusRepository.findComplaintStatusByStatus("CLOSED");
         complaint.setComplaintStatus(complaintStatus);
         complaintRepository.save(complaint);
         return complaint;
