@@ -46,7 +46,7 @@ public enum ErrorCode implements BasicMessageCode {
     ERR_036("Error occurred when adding address!"),
     ERR_037("Error occurred when retrieving addresses!"),
     ERR_038("Could not find address with ID: "),
-    ERR_039("Error occurred when removing address! The address is connected to an existing complaint!"),
+    ERR_039("Error occurred when removing address! The address is connected to an existing order!"),
     ERR_040("Error occurred when removing address!"),
     ERR_041("Error occurred when changing password!"),
     ERR_042("Item image is null!"),

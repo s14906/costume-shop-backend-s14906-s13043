@@ -225,13 +225,13 @@ public class UserController {
             CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_039, e, logger);
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
-                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_039, e))
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_039))
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
             CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_040, e, logger);
             return new ResponseEntity<>(SimpleResponse.builder()
                     .success(false)
-                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_040, e))
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_040))
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
