@@ -73,7 +73,7 @@ public class OrderController {
     }
 
     @GetMapping(path = "/users/{userId}/orders")
-    public @ResponseBody ResponseEntity<?> getOrdersForUser(@PathVariable("userId") Integer userId) {
+    public @ResponseBody ResponseEntity<?> getAllOrdersByUserId(@PathVariable("userId") Integer userId) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
@@ -94,7 +94,7 @@ public class OrderController {
     }
 
     @GetMapping(path = "/orders/{orderId}")
-    public @ResponseBody ResponseEntity<?> getOrderDetails(@PathVariable("orderId") Integer orderId) {
+    public @ResponseBody ResponseEntity<?> getOrderDetailsByOrderId(@PathVariable("orderId") Integer orderId) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {

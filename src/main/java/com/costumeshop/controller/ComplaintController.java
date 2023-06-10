@@ -55,7 +55,7 @@ public class ComplaintController {
     }
 
     @GetMapping(path = "/complaints/{complaintId}")
-    public @ResponseBody ResponseEntity<?> getComplaint(@PathVariable("complaintId") Integer complaintId) {
+    public @ResponseBody ResponseEntity<?> getComplaintById(@PathVariable("complaintId") Integer complaintId) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
@@ -76,7 +76,7 @@ public class ComplaintController {
     }
 
     @GetMapping(path = "/complaints/{complaintId}/messages")
-    public @ResponseBody ResponseEntity<?> getComplaintChatMessages(@PathVariable("complaintId") Integer complaintId) {
+    public @ResponseBody ResponseEntity<?> getComplaintChatMessagesByComplaintId(@PathVariable("complaintId") Integer complaintId) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
@@ -97,7 +97,7 @@ public class ComplaintController {
     }
 
     @PostMapping(path = "/complaints/{complaintId}/messages")
-    public @ResponseBody ResponseEntity<?> saveComplaintChatMessage(
+    public @ResponseBody ResponseEntity<?> postSendComplaintChatMessage(
             @RequestBody ComplaintChatMessageDTO complaintChatMessageDTO) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -121,8 +121,8 @@ public class ComplaintController {
     }
 
     @PostMapping(path = "/complaints")
-    public @ResponseBody ResponseEntity<?> assignEmployeeToComplaint(@RequestParam Integer userId,
-                                                                     @RequestParam Integer complaintId) {
+    public @ResponseBody ResponseEntity<?> postAssignComplaintToEmployee(@RequestParam Integer userId,
+                                                                         @RequestParam Integer complaintId) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
@@ -142,7 +142,7 @@ public class ComplaintController {
     }
 
     @PostMapping(path = "/complaints/create")
-    public @ResponseBody ResponseEntity<?> createNewComplaint(
+    public @ResponseBody ResponseEntity<?> postCreateNewComplaint(
             @RequestBody CreateNewComplaintDTO createNewComplaintDTO) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -164,7 +164,7 @@ public class ComplaintController {
     }
 
     @PostMapping(path = "/complaints/{complaintId}")
-    public @ResponseBody ResponseEntity<?> postCloseComplaint(@PathVariable("complaintId") Integer complaintId) {
+    public @ResponseBody ResponseEntity<?> psotCloseComplaintById(@PathVariable("complaintId") Integer complaintId) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {

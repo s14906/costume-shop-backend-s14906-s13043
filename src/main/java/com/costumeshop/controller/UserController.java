@@ -50,7 +50,7 @@ public class UserController {
 
 
     @PostMapping(path = "/registration")
-    public @ResponseBody ResponseEntity<?> registerNewUser(@RequestBody UserRegistrationDTO dto) {
+    public @ResponseBody ResponseEntity<?> postUserRegistration(@RequestBody UserRegistrationDTO dto) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
@@ -81,7 +81,7 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public @ResponseBody ResponseEntity<?> login(@RequestBody UserLoginDTO dto) {
+    public @ResponseBody ResponseEntity<?> postUserLogin(@RequestBody UserLoginDTO dto) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
 
@@ -150,7 +150,7 @@ public class UserController {
     }
 
     @PostMapping("/verification")
-    public @ResponseBody ResponseEntity<?> verifyUser(@RequestParam Integer userId) {
+    public @ResponseBody ResponseEntity<?> postUserVerificationById(@RequestParam Integer userId) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
@@ -170,7 +170,7 @@ public class UserController {
     }
 
     @PostMapping("/add-address")
-    public @ResponseBody ResponseEntity<?> addAddress(@RequestBody AddressDTO request) {
+    public @ResponseBody ResponseEntity<?> postAddAddress(@RequestBody AddressDTO request) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
@@ -190,7 +190,7 @@ public class UserController {
     }
 
     @GetMapping("/get-addresses")
-    public @ResponseBody ResponseEntity<?> getAddressesForUser(@RequestParam Integer userId) {
+    public @ResponseBody ResponseEntity<?> getAddressesByUserId(@RequestParam Integer userId) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
@@ -210,8 +210,8 @@ public class UserController {
         }
     }
 
-    @PostMapping("/remove-address")
-    public @ResponseBody ResponseEntity<?> removeAddress(@RequestParam Integer addressId) {
+    @PostMapping("/delete-address")
+    public @ResponseBody ResponseEntity<?> deleteAddressById(@RequestParam Integer addressId) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {
@@ -237,8 +237,8 @@ public class UserController {
     }
 
     @PostMapping("/change-password")
-    public @ResponseBody ResponseEntity<?> changePassword(@RequestParam Integer userId,
-                                                          @RequestParam String newPassword) {
+    public @ResponseBody ResponseEntity<?> postChangePassword(@RequestParam Integer userId,
+                                                              @RequestParam String newPassword) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
         try {

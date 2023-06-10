@@ -20,12 +20,10 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String email;
-    private String role;
     private String password;
     private String username;
     private Integer emailVerified;
     private String name;
-    private String secondName;
     private String surname;
     private String verificationToken;
 
