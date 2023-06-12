@@ -13,10 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -133,6 +130,12 @@ public class ComplaintDatabaseService {
 
         complaintRepository.save(complaint);
         complaintChatMessageRepository.save(complaintChatMessage);
+
+        List<String> complaintChatImagesBase64 = createNewComplaintDTO.getComplaintChatImagesBase64();
+        Set<ComplaintChatImage> complaintChatImages = new HashSet<>();
+        if (complaintChatImagesBase64 != null && !complaintChatImagesBase64.isEmpty()) {
+            saveComplaintChatImages(complaintChatMessage, complaintChatImagesBase64, complaintChatImages);
+        }
         orderDatabaseService.insertNewOrder(order);
         return complaint.getId();
     }
@@ -143,5 +146,16 @@ public class ComplaintDatabaseService {
         complaint.setComplaintStatus(complaintStatus);
         complaintRepository.save(complaint);
         return complaint;
+    }
+
+    private void saveComplaintChatImages(ComplaintChatMessage complaintChatMessage, List<String> complaintChatImagesBase64, Set<ComplaintChatImage> complaintChatImages) {
+        complaintChatImagesBase64.forEach(complaintChatImageBase64 -> {
+            ComplaintChatImage complaintChatImage = new ComplaintChatImage();
+            complaintChatImage.setChatImageBase64(complaintChatImageBase64);
+            complaintChatImage.setComplaintChatMessage(complaintChatMessage);
+            complaintChatImageRepository.save(complaintChatImage);
+            complaintChatImages.add(complaintChatImage);
+        });
+        complaintChatMessage.setComplaintChatImages(complaintChatImages);
     }
 }
