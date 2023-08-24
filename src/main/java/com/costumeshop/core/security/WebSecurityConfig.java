@@ -43,7 +43,6 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/complaints").hasAuthority(EMPLOYEE)
                         .requestMatchers(HttpMethod.GET, "/api/orders").hasAuthority(EMPLOYEE)
                         .requestMatchers(HttpMethod.POST, "/api/items").hasAuthority(EMPLOYEE)
-
                         .anyRequest().authenticated()
                 );
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

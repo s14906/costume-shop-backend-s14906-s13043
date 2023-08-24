@@ -7,7 +7,6 @@ import com.costumeshop.model.dto.AddToCartDTO;
 import com.costumeshop.model.dto.CartItemDTO;
 import com.costumeshop.model.response.CartResponse;
 import com.costumeshop.model.response.SimpleResponse;
-import com.costumeshop.service.database.OrderDatabaseService;
 import com.costumeshop.service.database.CartDatabaseService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -26,7 +25,6 @@ import java.util.List;
 @CrossOrigin()
 public class CartController {
     private static final Logger logger = LoggerFactory.getLogger(CartController.class);
-    private final OrderDatabaseService orderDatabaseService;
     private final CartDatabaseService cartDatabaseService;
 
     @PostMapping(path = "/cart")
