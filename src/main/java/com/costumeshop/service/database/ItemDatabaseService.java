@@ -191,6 +191,7 @@ public class ItemDatabaseService {
 
         ItemCategory itemCategory = new ItemCategory();
         itemCategory.setCategory(category);
+        itemCategory.setStatus(1);
         itemCategoryRepository.save(itemCategory);
     }
 }

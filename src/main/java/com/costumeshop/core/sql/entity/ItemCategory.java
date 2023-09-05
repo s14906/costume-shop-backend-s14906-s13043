@@ -15,8 +15,8 @@ public class ItemCategory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
     private String category;
+    private Integer status;
 
     @JsonManagedReference
     @OneToMany
