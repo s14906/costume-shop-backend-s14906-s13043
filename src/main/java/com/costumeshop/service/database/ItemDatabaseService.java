@@ -183,4 +183,14 @@ public class ItemDatabaseService {
         }
         itemRepository.save(item);
     }
+
+    public void insertItemCategory(String category) {
+        if (category == null || category.isBlank() || category.isEmpty()) {
+            throw new DataException(ErrorCode.ERR_125);
+        }
+
+        ItemCategory itemCategory = new ItemCategory();
+        itemCategory.setCategory(category);
+        itemCategoryRepository.save(itemCategory);
+    }
 }

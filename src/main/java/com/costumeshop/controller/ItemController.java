@@ -10,7 +10,6 @@ import com.costumeshop.model.dto.ItemSetDTO;
 import com.costumeshop.model.response.ItemResponse;
 import com.costumeshop.model.response.SimpleResponse;
 import com.costumeshop.service.database.ItemDatabaseService;
-import com.costumeshop.service.database.OrderDatabaseService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +70,26 @@ public class ItemController {
             return new ResponseEntity<>(ItemResponse.builder()
                     .success(false)
                     .message(CodeMessageUtils.getMessage(ErrorCode.ERR_111))
+                    .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping(path = "/items/categories/{category}")
+    public @ResponseBody ResponseEntity<?> postAddItemCategory(@PathVariable String category) {
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.setContentType(MediaType.APPLICATION_JSON);
+        try {
+            itemDatabaseService.insertItemCategory(category);
+            CodeMessageUtils.logMessage(InfoCode.INFO_065, logger);
+            return new ResponseEntity<>(SimpleResponse.builder()
+                    .success(true)
+                    .message(CodeMessageUtils.getMessage(InfoCode.INFO_065))
+                    .build(), responseHeaders, HttpStatus.OK);
+        } catch (Exception e) {
+            CodeMessageUtils.logMessageAndPrintStackTrace(ErrorCode.ERR_126, e, logger);
+            return new ResponseEntity<>(SimpleResponse.builder()
+                    .success(false)
+                    .message(CodeMessageUtils.getMessage(ErrorCode.ERR_126))
                     .build(), responseHeaders, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

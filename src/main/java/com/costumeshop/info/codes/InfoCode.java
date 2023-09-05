@@ -71,7 +71,9 @@ public enum InfoCode implements BasicMessageCode {
     INFO_061("Complaint status has been updated to: %1 for complaint ID: %2."),
     INFO_062("All order statuses retrieved"),
     INFO_063("Order status has been updated for order ID: %1."),
-    INFO_064("User retrieved by order ID: %1.");
+    INFO_064("User retrieved by order ID: %1."),
+    INFO_065("New item category has been inserted.");
+
 
     private String message;
 

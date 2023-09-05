@@ -131,8 +131,9 @@ public enum ErrorCode implements BasicMessageCode {
     ERR_121("Amount of items to be purchased is higher than number of items available."),
     ERR_122("Error occurred when retrieving order statuses."),
     ERR_123("Error occurred when updating order status for order: %1."),
-    ERR_124("Error occurred while retrieving user by order ID: %1");
-
+    ERR_124("Error occurred while retrieving user by order ID: %1"),
+    ERR_125("Item category must not be null or empty."),
+    ERR_126("Error occurred when inserting new item category.");
 
     private String message;
 
