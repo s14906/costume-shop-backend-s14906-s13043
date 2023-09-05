@@ -10,10 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -244,7 +241,7 @@ public class DataMapperService {
                 .build();
     }
 
-    public ItemDTO itemToItemDTO(Item item, List<ItemImageDTO> itemImageDTOs) {
+    public ItemDTO itemToItemDTO(Item item, List<ItemImageDTO> itemImageDTOs, ItemSize itemSize) {
         if (itemImageDTOs.isEmpty()) {
             throw new DataException(ErrorCode.ERR_045);
         }
@@ -274,6 +271,7 @@ public class DataMapperService {
                 .visible(item.getVisible())
                 .itemCategory(item.getItemCategory().getCategory())
                 .itemSet(item.getItemSet().getSet())
+                .itemSize(itemSize != null ? itemSize.getSize() : null)
                 .build();
     }
 
@@ -513,7 +511,7 @@ public class DataMapperService {
             ItemImageDTO itemImageDTO = itemImageToItemImageDTO(itemImage);
             itemImageDTOs.add(itemImageDTO);
         }
-        ItemDTO itemDTO = itemToItemDTO(item, itemImageDTOs);
+        ItemDTO itemDTO = itemToItemDTO(item, itemImageDTOs, null);
         itemDTOs.add(itemDTO);
     }
 

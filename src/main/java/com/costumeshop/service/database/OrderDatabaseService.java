@@ -61,18 +61,18 @@ public class OrderDatabaseService {
         if (ordersDetails.isEmpty()) {
             throw new DataException(ErrorCode.ERR_082, orderId);
         }
+
         Set<ItemDTO> itemDTOs = new HashSet<>();
-
         List<ItemImageDTO> itemImageDTOs = new ArrayList<>();
-
         for (OrderDetails orderDetails : ordersDetails) {
             Item item = orderDetails.getItem();
+            ItemSize itemSize = orderDetails.getItemSize();
             for (ItemImage itemImage : item.getItemImages()) {
                 ItemImageDTO itemImageDTO = dataMapperService.itemImageToItemImageDTO(itemImage);
                 itemImageDTOs.add(itemImageDTO);
             }
             ItemDTO itemDTO =
-                    dataMapperService.itemToItemDTO(item, itemImageDTOs);
+                    dataMapperService.itemToItemDTO(item, itemImageDTOs, itemSize);
 
             itemDTOs.add(itemDTO);
         }

@@ -20,4 +20,5 @@ public class ItemDTO {
     private Integer visible;
     private String itemCategory;
     private String itemSet;
+    private String itemSize;
 }

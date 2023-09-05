@@ -140,7 +140,7 @@ public class ItemDatabaseService {
             ItemImageDTO itemImageDTO = dataMapperService.itemImageToItemImageDTO(itemImage);
             itemImageDTOs.add(itemImageDTO);
         });
-        return dataMapperService.itemToItemDTO(item, itemImageDTOs);
+        return dataMapperService.itemToItemDTO(item, itemImageDTOs, null);
     }
 
     public Integer insertItemByItemDTO(ItemDTO itemDTO) {
