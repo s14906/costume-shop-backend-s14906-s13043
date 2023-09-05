@@ -210,7 +210,7 @@ public class UserController {
         }
     }
 
-    @PostMapping("/delete-address")
+    @DeleteMapping("/delete-address")
     public @ResponseBody ResponseEntity<?> deleteAddressById(@RequestParam Integer addressId) {
         HttpHeaders responseHeaders = new HttpHeaders();
         responseHeaders.setContentType(MediaType.APPLICATION_JSON);
